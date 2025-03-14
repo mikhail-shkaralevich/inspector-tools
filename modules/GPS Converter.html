@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTM to DMS Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>UTM to DMS Converter</h1>
+    <textarea id="utmInput" placeholder="Enter UTM coordinates (e.g., N:2173399.65527451, E:190769.201306669, Z:5Q)"></textarea>
+    <button onclick="convertUtmToDms()">Convert to DMS</button>
+    <h2>DMS Output:</h2>
+    <pre id="dmsOutput"></pre>
+
+    <script>
+        function decimalToDMS(decimal, isLatitude) {
+            const degrees = Math.floor(Math.abs(decimal));
+            const minutesFloat = (Math.abs(decimal) - degrees) * 60;
+            const minutes = Math.floor(minutesFloat);
+            const seconds = (minutesFloat - minutes) * 60;
+
+            const direction = isLatitude
+                ? (decimal >= 0 ? "N" : "S")
+                : (decimal >= 0 ? "E" : "W");
+
+            return `${degrees}° ${minutes}' ${seconds.toFixed(2)}" ${direction}`;
+        }
+
+        function convertUtmToDms() {
+            const input = document.getElementById('utmInput').value.trim();
+            
+            // Match UTM-style input (e.g., "N:2173399.65527451, E:190769.201306669, Z:5Q")
+            const matches = input.match(/N:\s*([\d.]+),\s*E:\s*([\d.]+),\s*Z:\s*(\d+)([A-Z])/i);
+            if (!matches || matches.length < 5) {
+                alert("Invalid input format. Please use 'N:xxxxxxx, E:xxxxxxx, Z:xx'.");
+                return;
+            }
+
+            const northing = parseFloat(matches[1]);
+            const easting = parseFloat(matches[2]);
+            const zone = parseInt(matches[3]);
+            const hemisphere = matches[4]; // The latitude band letter (e.g., 'Q')
+
+            if (isNaN(northing) || isNaN(easting) || isNaN(zone)) {
+                alert("Invalid numbers in input.");
+                return;
+            }
+
+            // Define the UTM projection (zone-based, assuming WGS84)
+            const utmProj = `+proj=utm +zone=${zone} +datum=WGS84 ${hemisphere >= 'N' ? '' : '+south'}`;
+            const wgs84Proj = "+proj=longlat +datum=WGS84";
+
+            // Convert UTM (Easting, Northing) to Lat/Lon
+            let [lon, lat] = proj4(utmProj, wgs84Proj, [easting, northing]);
+
+            // Convert to DMS
+            const latDMS = decimalToDMS(lat, true);
+            const lonDMS = decimalToDMS(lon, false);
+
+            // Display result
+            document.getElementById('dmsOutput').textContent = `Latitude: ${latDMS}\nLongitude: ${lonDMS}`;
+        }
+    </script>
+</body>
+</html>

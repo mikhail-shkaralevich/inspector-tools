@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concrete Yield Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+        .unit-selection {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .unit-selection label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .weight-fields, .volume-fields {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .weight-fields input, .volume-fields input {
+            flex: 1;
+        }
+        .weight-fields span, .volume-fields span {
+            font-weight: bold;
+        }
+        .result-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .result-field input {
+            flex: 1;
+        }
+        .result-field span {
+            font-weight: bold;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+        .contractor-label {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em; /* Smaller font size */
+        }
+        .si-weight-field, .si-volume-field {
+            display: none; /* Hide SI fields by default */
+        }
+        .last-field-container {
+            display: block; /* Show last field by default */
+        }
+        .reset-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .reset-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Concrete Yield Calculator</h2>
+    <form id="yieldForm">
+        <!-- Unit Selection -->
+        <div class="unit-selection">
+            <label>
+                <input type="radio" name="unit" value="English" checked> English
+            </label>
+            <label>
+                <input type="radio" name="unit" value="SI"> SI 
+            </label>
+        </div>
+
+        <!-- Input Fields for English System -->
+        <div id="englishFields">
+            <label for="totalWeight">Total Weight of Concrete:</label>
+            <div class="weight-fields">
+                <input type="number" id="pounds" placeholder="Pounds" step="1">
+                <span>lbs</span>
+                <span>or</span>
+                <input type="number" id="tons" placeholder="Tons" step="0.1">
+                <span>tons</span>
+            </div>
+
+            <label for="measuredDensity">Measured Density of the Freshly Mixed Concrete:</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="number" id="measuredDensityEnglish" step="0.1" required>
+                <span>lbs/ft³</span>
+            </div>
+
+            <!-- Read-only Yield Field -->
+            <label for="yield">Yield:</label>
+            <div class="result-field">
+                <input type="text" id="yieldEnglish" readonly>
+                <span>ft³</span>
+            </div>
+
+            <!-- Designed Volume Input Fields -->
+            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
+            <div class="volume-fields">
+                <input type="number" id="designedVolumeFt" placeholder="Cubic Feet" step="0.1">
+                <span>ft³</span>
+                <span>or</span>
+                <input type="number" id="designedVolumeYd" placeholder="Cubic Yards" step="0.1">
+                <span>yd³</span>
+            </div>
+
+            <!-- Read-only Relative Yield Field -->
+            <label for="relativeYield">Relative Yield:</label>
+            <div class="result-field">
+                <input type="text" id="relativeYieldEnglish" readonly>
+                <span>Actual Volume / Design Volume</span>
+            </div>
+
+            <!-- Note for Relative Yield -->
+            <div class="note">
+                <div>Ry > 1.00: Indicates an excess of concrete was produced.</div>
+                <div>Ry < 1.00: Indicates the concrete batch was short of the designed volume.</div>
+                <div>Ry = 1.00: Indicates the delivered concrete matches the designed volume.</div>
+            </div>
+
+            <!-- Last Field Container (for English system only) -->
+            <div class="last-field-container">
+                <!-- Original Label -->
+                <label for="actualOverDesignVolume">ft³ of actual volume of concrete / yd³ of design volume of concrete:</label>
+
+                <!-- New Label -->
+                <div class="contractor-label">This is loosely referred by Contractor or Supplier as Yield:</div>
+
+                <!-- New Field: Actual Volume (ft³) / Design Volume (yd³) -->
+                <div class="result-field">
+                    <input type="text" id="actualOverDesignVolumeEnglish" readonly>
+                    <span>ft³/yd³</span>
+                </div>
+            </div>
+
+            <!-- Reset Button for English System -->
+            <button type="button" class="reset-button" onclick="resetEnglishFields()">Reset</button>
+        </div>
+
+        <!-- Input Fields for SI System -->
+        <div id="siFields" style="display: none;">
+            <label for="totalWeight">Total Weight of Concrete:</label>
+            <div class="weight-fields">
+                <input type="number" id="kilograms" placeholder="Kilograms" step="0.1">
+                <span>kg</span>
+            </div>
+
+            <label for="measuredDensity">Measured Density of the Freshly Mixed Concrete:</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="number" id="measuredDensitySI" step="0.1" required>
+                <span>kg/m³</span>
+            </div>
+
+            <!-- Read-only Yield Field -->
+            <label for="yield">Yield:</label>
+            <div class="result-field">
+                <input type="text" id="yieldSI" readonly>
+                <span>m³</span>
+            </div>
+
+            <!-- Designed Volume Input Fields -->
+            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
+            <div class="volume-fields">
+                <input type="number" id="designedVolumeM3" placeholder="Cubic Meters" step="0.1">
+                <span>m³</span>
+            </div>
+
+            <!-- Read-only Relative Yield Field -->
+            <label for="relativeYield">Relative Yield:</label>
+            <div class="result-field">
+                <input type="text" id="relativeYieldSI" readonly>
+                <span>Actual Volume / Design Volume</span>
+            </div>
+
+            <!-- Note for Relative Yield -->
+            <div class="note">
+                <div>Ry > 1.00: Indicates an excess of concrete was produced.</div>
+                <div>Ry < 1.00: Indicates the concrete batch was short of the designed volume.</div>
+                <div>Ry = 1.00: Indicates the delivered concrete matches the designed volume.</div>
+            </div>
+
+            <!-- Reset Button for SI System -->
+            <button type="button" class="reset-button" onclick="resetSIFields()">Reset</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Get all input fields
+    const poundsInput = document.getElementById('pounds');
+    const tonsInput = document.getElementById('tons');
+    const kilogramsInput = document.getElementById('kilograms');
+    const measuredDensityEnglish = document.getElementById('measuredDensityEnglish');
+    const measuredDensitySI = document.getElementById('measuredDensitySI');
+    const yieldEnglish = document.getElementById('yieldEnglish');
+    const yieldSI = document.getElementById('yieldSI');
+    const designedVolumeFtInput = document.getElementById('designedVolumeFt');
+    const designedVolumeYdInput = document.getElementById('designedVolumeYd');
+    const designedVolumeM3Input = document.getElementById('designedVolumeM3');
+    const relativeYieldEnglish = document.getElementById('relativeYieldEnglish');
+    const relativeYieldSI = document.getElementById('relativeYieldSI');
+    const actualOverDesignVolumeEnglish = document.getElementById('actualOverDesignVolumeEnglish');
+    const englishFields = document.getElementById('englishFields');
+    const siFields = document.getElementById('siFields');
+
+    // Update fields based on selected unit system
+    document.querySelectorAll('input[name="unit"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            if (radio.value === "English") {
+                // Show English fields and hide SI fields
+                englishFields.style.display = "block";
+                siFields.style.display = "none";
+            } else {
+                // Show SI fields and hide English fields
+                englishFields.style.display = "none";
+                siFields.style.display = "block";
+            }
+            calculateYield(); // Recalculate yield when unit system changes
+        });
+    });
+
+    // Add event listeners to dynamically calculate yield and relative yield
+    poundsInput.addEventListener('input', () => {
+        if (poundsInput.value) {
+            tonsInput.value = (poundsInput.value / 2000).toFixed(1);
+        } else {
+            tonsInput.value = '';
+        }
+        calculateYield();
+    });
+
+    tonsInput.addEventListener('input', () => {
+        if (tonsInput.value) {
+            poundsInput.value = (tonsInput.value * 2000).toFixed(0);
+        } else {
+            poundsInput.value = '';
+        }
+        calculateYield();
+    });
+
+    kilogramsInput.addEventListener('input', calculateYield);
+    measuredDensityEnglish.addEventListener('input', calculateYield);
+    measuredDensitySI.addEventListener('input', calculateYield);
+
+    // Dynamic conversion between cubic feet and cubic yards
+    designedVolumeFtInput.addEventListener('input', () => {
+        if (designedVolumeFtInput.value) {
+            designedVolumeYdInput.value = (designedVolumeFtInput.value / 27).toFixed(2);
+        } else {
+            designedVolumeYdInput.value = '';
+        }
+        calculateYield();
+    });
+
+    designedVolumeYdInput.addEventListener('input', () => {
+        if (designedVolumeYdInput.value) {
+            designedVolumeFtInput.value = (designedVolumeYdInput.value * 27).toFixed(2);
+        } else {
+            designedVolumeFtInput.value = '';
+        }
+        calculateYield();
+    });
+
+    designedVolumeM3Input.addEventListener('input', calculateYield);
+
+    function calculateYield() {
+        // Get the selected unit system
+        const unitSystem = document.querySelector('input[name="unit"]:checked').value;
+
+        if (unitSystem === "English") {
+            // Calculate for English system
+            const pounds = parseFloat(poundsInput.value);
+            const measuredDensity = parseFloat(measuredDensityEnglish.value);
+            const designedVolumeFt = parseFloat(designedVolumeFtInput.value);
+            const designedVolumeYd = parseFloat(designedVolumeYdInput.value);
+
+            // Check if inputs are valid
+            if (isNaN(pounds) || isNaN(measuredDensity) || measuredDensity <= 0) {
+                yieldEnglish.value = "Enter valid values";
+                relativeYieldEnglish.value = "";
+                actualOverDesignVolumeEnglish.value = "";
+                return;
+            }
+
+            // Calculate yield in ft³
+            const yield = pounds / measuredDensity;
+            const yieldInCubicYards = yield / 27; // Convert ft³ to yd³
+            yieldEnglish.value = yield.toFixed(2);
+            document.querySelector('#yieldEnglish + span').innerText = `ft³ or ${yieldInCubicYards.toFixed(2)} yd³`;
+
+            // Calculate relative yield
+            let relativeYield = "";
+            if (!isNaN(designedVolumeFt) && designedVolumeFt > 0) {
+                relativeYield = (yield / designedVolumeFt).toFixed(2);
+            }
+            relativeYieldEnglish.value = relativeYield;
+
+            // Calculate actual volume / design volume
+            let actualOverDesignVolume = "";
+            if (!isNaN(designedVolumeYd) && designedVolumeYd > 0) {
+                actualOverDesignVolume = (yield / designedVolumeYd).toFixed(2);
+            }
+            actualOverDesignVolumeEnglish.value = actualOverDesignVolume;
+        } else {
+            // Calculate for SI system
+            const kilograms = parseFloat(kilogramsInput.value);
+            const measuredDensity = parseFloat(measuredDensitySI.value);
+            const designedVolumeM3 = parseFloat(designedVolumeM3Input.value);
+
+            // Check if inputs are valid
+            if (isNaN(kilograms) || isNaN(measuredDensity) || measuredDensity <= 0) {
+                yieldSI.value = "Enter valid values";
+                relativeYieldSI.value = "";
+                return;
+            }
+
+            // Calculate yield in m³
+            const yield = kilograms / measuredDensity;
+            yieldSI.value = yield.toFixed(2);
+            document.querySelector('#yieldSI + span').innerText = "m³";
+
+            // Calculate relative yield
+            let relativeYield = "";
+            if (!isNaN(designedVolumeM3) && designedVolumeM3 > 0) {
+                relativeYield = (yield / designedVolumeM3).toFixed(2);
+            }
+            relativeYieldSI.value = relativeYield;
+        }
+    }
+
+    // Reset function for English system
+    function resetEnglishFields() {
+        poundsInput.value = "";
+        tonsInput.value = "";
+        measuredDensityEnglish.value = "";
+        designedVolumeFtInput.value = "";
+        designedVolumeYdInput.value = "";
+        yieldEnglish.value = "";
+        relativeYieldEnglish.value = "";
+        actualOverDesignVolumeEnglish.value = "";
+        document.querySelector('#yieldEnglish + span').innerText = "ft³";
+    }
+
+    // Reset function for SI system
+    function resetSIFields() {
+        kilogramsInput.value = "";
+        measuredDensitySI.value = "";
+        designedVolumeM3Input.value = "";
+        yieldSI.value = "";
+        relativeYieldSI.value = "";
+        document.querySelector('#yieldSI + span').innerText = "m³";
+    }
+</script>
+
+</body>
+</html>

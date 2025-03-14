@@ -1,0 +1,443 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Density, Mass, and Volume Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px; /* Increased container width */
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 20px; /* Space above labels */
+        }
+        input {
+            width: 70%; /* Reduced width of input fields to 70% */
+            padding: 8px;
+            margin-top: 5px; /* Space between field and unit */
+            box-sizing: border-box;
+        }
+        .unit {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 2px; /* Space between input field and unit */
+         }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: green; /* Result text color is now green */
+        }
+        .unit-system {
+            display: flex;
+            justify-content: flex-start; /* Align radio buttons to the left */
+            gap: 20px; /* Space between radio buttons */
+            margin-top: 20px; /* Space above unit system */
+        }
+        .unit-system label {
+            display: inline-block;
+        }
+        .mass-group, .volume-group, .density-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px; /* Space above grouped fields */
+        }
+        .mass-group input, .volume-group input, .density-group input {
+            width: 70%; /* Reduced width of grouped input fields to 70% */
+        }
+        .mass-group span, .volume-group span, .density-group span {
+            font-weight: bold;
+        }
+        .reset-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .reset-button button {
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .reset-button button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Density, Mass, and Volume Calculator</h1>
+
+        <!-- Unit System Selection -->
+        <div class="unit-system">
+            <label>Select Unit System:</label>
+            <label><input type="radio" name="unitSystem" value="english" checked> English</label>
+            <label><input type="radio" name="unitSystem" value="si"> SI</label>
+        </div>
+
+        <!-- Input Fields -->
+        <label for="density">Input 2 Parameters:</label>
+        <div class="density-group" id="densityGroup">
+            <div>
+                <input type="number" id="densityInput" placeholder="density">
+                <div class="unit" id="densityUnitLabel">Density (lb/ft³)</div>
+            </div>
+            <span>or</span>
+            <div>
+                <input type="number" id="specificGravity" placeholder="specific gravity">
+                <div class="unit">Specific Gravity</div> <!-- Removed "(unitless)" -->
+            </div>
+        </div>
+
+        <div class="mass-group" id="massGroup">
+            <div>
+                <input type="number" id="massInput1" placeholder="mass">
+                <div class="unit" id="massUnit1Label">Mass (lbs)</div>
+            </div>
+            <span>or</span>
+            <div>
+                <input type="number" id="massInput2" placeholder="mass">
+                <div class="unit" id="massUnit2Label">Mass (tons)</div>
+            </div>
+        </div>
+
+        <div class="volume-group" id="volumeGroup">
+            <div>
+                <input type="number" id="volumeInput1" placeholder="volume">
+                <div class="unit" id="volumeUnit1Label">Volume (ft³)</div>
+            </div>
+            <span>or</span>
+            <div>
+                <input type="number" id="volumeInput2" placeholder="volume">
+                <div class="unit" id="volumeUnit2Label">Volume (yd³)</div>
+            </div>
+        </div>
+
+        <!-- Result Display -->
+        <div class="result" id="result"></div>
+
+        <!-- Reset Button -->
+        <div class="reset-button">
+            <button onclick="resetValues()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        // Conversion factors
+        const TON_TO_LBS = 2000; // 1 ton = 2000 lbs
+        const YD_TO_FT = 27; // 1 cubic yard = 27 cubic feet
+        const DENSITY_OF_WATER_ENGLISH = 62.4; // Density of water in lb/ft³
+        const DENSITY_OF_WATER_SI = 1000; // Density of water in kg/m³
+        const KG_TO_G = 1000; // 1 kg = 1000 g
+        const M3_TO_CM3 = 1e6; // 1 m³ = 1,000,000 cm³
+
+        // Function to format a number in scientific notation if it has 6 or more digits
+        function formatNumber(value) {
+            const absValue = Math.abs(value);
+            if (absValue >= 1e6 || (absValue !== 0 && absValue < 0.0001)) {
+                return value.toExponential(2);
+            }
+            return value.toFixed(2);
+        }
+
+        // Get references to input fields and unit labels
+        const densityInput = document.getElementById('densityInput');
+        const specificGravityInput = document.getElementById('specificGravity');
+        const massInput1 = document.getElementById('massInput1');
+        const massInput2 = document.getElementById('massInput2');
+        const volumeInput1 = document.getElementById('volumeInput1');
+        const volumeInput2 = document.getElementById('volumeInput2');
+        const densityUnitLabel = document.getElementById('densityUnitLabel');
+        const massUnit1Label = document.getElementById('massUnit1Label');
+        const massUnit2Label = document.getElementById('massUnit2Label');
+        const volumeUnit1Label = document.getElementById('volumeUnit1Label');
+        const volumeUnit2Label = document.getElementById('volumeUnit2Label');
+        const resultDiv = document.getElementById('result');
+
+        // Get unit system radio buttons
+        const unitSystemEnglish = document.querySelector('input[name="unitSystem"][value="english"]');
+        const unitSystemSI = document.querySelector('input[name="unitSystem"][value="si"]');
+
+        // Update labels and placeholders based on the selected unit system
+        function updateUnits() {
+            if (unitSystemEnglish.checked) {
+                // English System
+                densityUnitLabel.innerText = 'Density (lb/ft³)';
+                massUnit1Label.innerText = 'Mass (lbs)';
+                massUnit2Label.innerText = 'Mass (tons)';
+                volumeUnit1Label.innerText = 'Volume (ft³)';
+                volumeUnit2Label.innerText = 'Volume (yd³)';
+            } else {
+                // SI System
+                densityUnitLabel.innerText = 'Density (kg/m³)';
+                massUnit1Label.innerText = 'Mass (kg)';
+                massUnit2Label.innerText = 'Mass (g)';
+                volumeUnit1Label.innerText = 'Volume (m³)';
+                volumeUnit2Label.innerText = 'Volume (cm³)';
+            }
+        }
+
+        // Add event listeners to unit system radio buttons
+        unitSystemEnglish.addEventListener('change', () => {
+            updateUnits();
+            resetValues(); // Reset all values when switching unit systems
+        });
+        unitSystemSI.addEventListener('change', () => {
+            updateUnits();
+            resetValues(); // Reset all values when switching unit systems
+        });
+
+        // Initialize units on page load
+        updateUnits();
+
+ // Disable one density field when the other is filled
+        densityInput.addEventListener('input', () => {
+            if (densityInput.value) {
+                specificGravityInput.disabled = true;
+                const densityOfWater = unitSystemEnglish.checked ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI;
+                specificGravityInput.value = (densityInput.value / densityOfWater).toFixed(4);
+            } else {
+                specificGravityInput.disabled = false;
+                specificGravityInput.value = '';
+            }
+        });
+
+        specificGravityInput.addEventListener('input', () => {
+            if (specificGravityInput.value) {
+                densityInput.disabled = true;
+                const densityOfWater = unitSystemEnglish.checked ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI;
+                densityInput.value = (specificGravityInput.value * densityOfWater).toFixed(4);
+            } else {
+                densityInput.disabled = false;
+                densityInput.value = '';
+            }
+        });
+
+
+        // Disable one mass field when the other is filled
+        massInput1.addEventListener('input', () => {
+            if (massInput1.value) {
+                massInput2.disabled = true;
+                if (unitSystemEnglish.checked) {
+                    massInput2.value = (massInput1.value / TON_TO_LBS).toFixed(4); // Convert lbs to tons
+                } else {
+                    massInput2.value = (massInput1.value * KG_TO_G).toFixed(4); // Convert kg to g
+                }
+            } else {
+                massInput2.disabled = false;
+                massInput2.value = '';
+            }
+        });
+
+        massInput2.addEventListener('input', () => {
+            if (massInput2.value) {
+                massInput1.disabled = true;
+                if (unitSystemEnglish.checked) {
+                    massInput1.value = (massInput2.value * TON_TO_LBS).toFixed(4); // Convert tons to lbs
+                } else {
+                    massInput1.value = (massInput2.value / KG_TO_G).toFixed(4); // Convert g to kg
+                }
+            } else {
+                massInput1.disabled = false;
+                massInput1.value = '';
+            }
+        });
+
+
+       // Disable one volume field when the other is filled
+        volumeInput1.addEventListener('input', () => {
+            if (volumeInput1.value) {
+                volumeInput2.disabled = true;
+                if (unitSystemEnglish.checked) {
+                    volumeInput2.value = (volumeInput1.value / YD_TO_FT).toFixed(4); // Convert ft³ to yd³
+                } else {
+                    volumeInput2.value = (volumeInput1.value * M3_TO_CM3).toFixed(4); // Convert m³ to cm³
+                }
+            } else {
+                volumeInput2.disabled = false;
+                volumeInput2.value = '';
+            }
+        });
+
+        volumeInput2.addEventListener('input', () => {
+            if (volumeInput2.value) {
+                volumeInput1.disabled = true;
+                if (unitSystemEnglish.checked) {
+                    volumeInput1.value = (volumeInput2.value * YD_TO_FT).toFixed(4); // Convert yd³ to ft³
+                } else {
+                    volumeInput1.value = (volumeInput2.value / M3_TO_CM3).toFixed(4); // Convert cm³ to m³
+                }
+            } else {
+                volumeInput1.disabled = false;
+                volumeInput1.value = '';
+            }
+        });
+
+
+
+
+
+
+
+
+        // Function to dynamically convert mass units (lbs ↔ tons or kg ↔ g)
+        function convertMass() {
+            if (unitSystemEnglish.checked) {
+                // English System: lbs ↔ tons
+                if (massInput1.value) {
+                    massInput2.value = (massInput1.value / TON_TO_LBS).toFixed(4); // Convert lbs to tons
+                } else if (massInput2.value) {
+                    massInput1.value = (massInput2.value * TON_TO_LBS).toFixed(4); // Convert tons to lbs
+                }
+            } else {
+                // SI System: kg ↔ g
+                if (massInput1.value) {
+                    massInput2.value = (massInput1.value * KG_TO_G).toFixed(4); // Convert kg to g
+                } else if (massInput2.value) {
+                    massInput1.value = (massInput2.value / KG_TO_G).toFixed(4); // Convert g to kg
+                }
+            }
+        }
+
+        // Function to dynamically convert volume units (ft³ ↔ yd³ or m³ ↔ cm³)
+        function convertVolume() {
+            if (unitSystemEnglish.checked) {
+                // English System: ft³ ↔ yd³
+                if (volumeInput1.value) {
+                    volumeInput2.value = (volumeInput1.value / YD_TO_FT).toFixed(4); // Convert ft³ to yd³
+                } else if (volumeInput2.value) {
+                    volumeInput1.value = (volumeInput2.value * YD_TO_FT).toFixed(4); // Convert yd³ to ft³
+                }
+            } else {
+                // SI System: m³ ↔ cm³
+                if (volumeInput1.value) {
+                    volumeInput2.value = (volumeInput1.value * M3_TO_CM3).toFixed(4); // Convert m³ to cm³
+                } else if (volumeInput2.value) {
+                    volumeInput1.value = (volumeInput2.value / M3_TO_CM3).toFixed(4); // Convert cm³ to m³
+                }
+            }
+        }
+
+        // Function to calculate and display results dynamically
+        function calculate() {
+            // Get selected unit system
+            const unitSystem = document.querySelector('input[name="unitSystem"]:checked').value;
+
+            // Define units based on the selected system
+            let densityUnit, massUnit1, massUnit2, volumeUnit1, volumeUnit2;
+            if (unitSystem === 'si') {
+                densityUnit = 'kg/m³';
+                massUnit1 = 'kg';
+                massUnit2 = 'g';
+                volumeUnit1 = 'm³';
+                volumeUnit2 = 'cm³';
+            } else {
+                densityUnit = 'lb/ft³';
+                massUnit1 = 'lb';
+                massUnit2 = 'ton';
+                volumeUnit1 = 'ft³';
+                volumeUnit2 = 'yd³';
+            }
+
+            // Get input values
+            const density = parseFloat(densityInput.value);
+            const specificGravity = parseFloat(specificGravityInput.value);
+            const mass1 = parseFloat(massInput1.value);
+            const mass2 = parseFloat(massInput2.value);
+            const volume1 = parseFloat(volumeInput1.value);
+            const volume2 = parseFloat(volumeInput2.value);
+
+            // Convert mass to base unit (kg or lb)
+            let mass;
+            if (unitSystem === 'si') {
+                mass = mass1 || mass2 / KG_TO_G; // Use kg or convert g to kg
+            } else {
+                mass = mass1 || mass2 * TON_TO_LBS; // Use lb or convert ton to lb
+            }
+
+            // Convert volume to base unit (m³ or ft³)
+            let volume;
+            if (unitSystem === 'si') {
+                volume = volume1 || volume2 / M3_TO_CM3; // Use m³ or convert cm³ to m³
+            } else {
+                volume = volume1 || volume2 * YD_TO_FT; // Use ft³ or convert yd³ to ft³
+            }
+
+            // Convert density to base unit (kg/m³ or lb/ft³) if specific gravity is entered
+            const densityOfWater = unitSystem === 'si' ? DENSITY_OF_WATER_SI : DENSITY_OF_WATER_ENGLISH;
+            const finalDensity = density || specificGravity * densityOfWater;
+
+            let resultText = '';
+
+            if (!isNaN(finalDensity) && !isNaN(mass) && isNaN(volume)) {
+                // Calculate Volume
+                const calculatedVolume1 = mass / finalDensity;
+                let calculatedVolume2;
+                if (unitSystem === 'si') {
+                    calculatedVolume2 = calculatedVolume1 * M3_TO_CM3; // Convert m³ to cm³
+                } else {
+                    calculatedVolume2 = calculatedVolume1 / YD_TO_FT; // Convert ft³ to yd³
+                }
+                resultText = `Volume: ${formatNumber(calculatedVolume1)} ${volumeUnit1} or ${formatNumber(calculatedVolume2)} ${volumeUnit2}`;
+            } else if (!isNaN(finalDensity) && isNaN(mass) && !isNaN(volume)) {
+                // Calculate Mass
+                const calculatedMass1 = finalDensity * volume;
+                let calculatedMass2;
+                if (unitSystem === 'si') {
+                    calculatedMass2 = calculatedMass1 * KG_TO_G; // Convert kg to g
+                } else {
+                    calculatedMass2 = calculatedMass1 / TON_TO_LBS; // Convert lb to ton
+                }
+                resultText = `Mass: ${formatNumber(calculatedMass1)} ${massUnit1} or ${formatNumber(calculatedMass2)} ${massUnit2}`;
+            } else if (isNaN(finalDensity) && !isNaN(mass) && !isNaN(volume)) {
+                // Calculate Density
+                const calculatedDensity1 = mass / volume;
+                const calculatedDensity2 = calculatedDensity1 / densityOfWater; // Specific gravity
+                resultText = `Density: ${formatNumber(calculatedDensity1)} ${densityUnit} or Specific Gravity: ${formatNumber(calculatedDensity2)}`;
+            } else {
+                resultText = 'Please provide exactly two values to calculate the third.';
+            }
+
+            resultDiv.innerText = resultText;
+        }
+
+        // Add event listeners to all input fields for dynamic calculation
+        const inputs = [densityInput, specificGravityInput, massInput1, massInput2, volumeInput1, volumeInput2];
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                // Convert mass and volume units dynamically
+                convertMass();
+                convertVolume();
+                // Calculate the third parameter
+                calculate();
+            });
+        });
+
+        // Reset input values
+        function resetValues() {
+            densityInput.value = '';
+            specificGravityInput.value = '';
+            massInput1.value = '';
+            massInput2.value = '';
+            volumeInput1.value = '';
+            volumeInput2.value = '';
+            resultDiv.innerText = '';
+            densityInput.disabled = false;
+            specificGravityInput.disabled = false;
+            massInput1.disabled = false;
+            massInput2.disabled = false;
+            volumeInput1.disabled = false;
+            volumeInput2.disabled = false;
+        }
+    </script>
+</body>
+</html>

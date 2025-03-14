@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sieve Analysis for Asphalt Mix - 3 Stockpiles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 60px;
+            margin: 2px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sieve Analysis for Asphalt Mix - 3 Stockpiles</h1>
+    
+    <div class="input-section">
+        <h3>Stockpile Proportions</h3>
+        <label>Stockpile 1 (%): <input type="number" id="prop1" value="50" min="0" max="100"></label>
+        <label>Stockpile 2 (%): <input type="number" id="prop2" value="30" min="0" max="100"></label>
+        <label>Stockpile 3 (%): <input type="number" id="prop3" value="20" min="0" max="100"></label>
+        <button onclick="calculateBlend()">Calculate Blend</button>
+    </div>
+
+    <table>
+        <tr>
+            <th>Sieve Size</th>
+            <th>Stockpile 1<br>(% Passing)</th>
+            <th>Stockpile 2<br>(% Passing)</th>
+            <th>Stockpile 3<br>(% Passing)</th>
+            <th>Blend<br>(% Passing)</th>
+        </tr>
+        <tr>
+            <td>50.8 mm (2")</td>
+            <td><input type="number" class="sp1" value="100" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="100" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="100" min="0" max="100"></td>
+            <td id="blend-50.8mm">-</td>
+        </tr>
+        <tr>
+            <td>38.1 mm (1 1/2")</td>
+            <td><input type="number" class="sp1" value="95" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="100" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="100" min="0" max="100"></td>
+            <td id="blend-38.1mm">-</td>
+        </tr>
+        <tr>
+            <td>25.4 mm (1")</td>
+            <td><input type="number" class="sp1" value="85" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="95" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="100" min="0" max="100"></td>
+            <td id="blend-25.4mm">-</td>
+        </tr>
+        <tr>
+            <td>19.0 mm (3/4")</td>
+            <td><input type="number" class="sp1" value="75" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="90" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="95" min="0" max="100"></td>
+            <td id="blend-19mm">-</td>
+        </tr>
+        <tr>
+            <td>12.5 mm (1/2")</td>
+            <td><input type="number" class="sp1" value="65" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="85" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="90" min="0" max="100"></td>
+            <td id="blend-12.5mm">-</td>
+        </tr>
+        <tr>
+            <td>9.5 mm (3/8")</td>
+            <td><input type="number" class="sp1" value="55" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="75" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="80" min="0" max="100"></td>
+            <td id="blend-9.5mm">-</td>
+        </tr>
+        <tr>
+            <td>4.75 mm (#4)</td>
+            <td><input type="number" class="sp1" value="45" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="65" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="70" min="0" max="100"></td>
+            <td id="blend-4.75mm">-</td>
+        </tr>
+        <tr>
+            <td>2.36 mm (#8)</td>
+            <td><input type="number" class="sp1" value="35" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="55" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="60" min="0" max="100"></td>
+            <td id="blend-2.36mm">-</td>
+        </tr>
+        <tr>
+            <td>1.18 mm (#16)</td>
+            <td><input type="number" class="sp1" value="25" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="45" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="50" min="0" max="100"></td>
+            <td id="blend-1.18mm">-</td>
+        </tr>
+        <tr>
+            <td>0.6 mm (#30)</td>
+            <td><input type="number" class="sp1" value="18" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="35" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="40" min="0" max="100"></td>
+            <td id="blend-0.6mm">-</td>
+        </tr>
+        <tr>
+            <td>0.3 mm (#50)</td>
+            <td><input type="number" class="sp1" value="12" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="25" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="30" min="0" max="100"></td>
+            <td id="blend-0.3mm">-</td>
+        </tr>
+        <tr>
+            <td>0.15 mm (#100)</td>
+            <td><input type="number" class="sp1" value="8" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="15" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="20" min="0" max="100"></td>
+            <td id="blend-0.15mm">-</td>
+        </tr>
+        <tr>
+            <td>0.075 mm (#200)</td>
+            <td><input type="number" class="sp1" value="4" min="0" max="100"></td>
+            <td><input type="number" class="sp2" value="8" min="0" max="100"></td>
+            <td><input type="number" class="sp3" value="10" min="0" max="100"></td>
+            <td id="blend-0.075mm">-</td>
+        </tr>
+    </table>
+
+    <script>
+        function calculateBlend() {
+            // Get proportions
+            const prop1 = parseFloat(document.getElementById('prop1').value) / 100;
+            const prop2 = parseFloat(document.getElementById('prop2').value) / 100;
+            const prop3 = parseFloat(document.getElementById('prop3').value) / 100;
+            
+            // Check if proportions sum to 100%
+            if (Math.abs((prop1 + prop2 + prop3) - 1) > 0.01) {
+                alert('Proportions must sum to 100%');
+                return;
+            }
+
+            // Get all sieve values
+            const sp1Values = Array.from(document.getElementsByClassName('sp1')).map(input => parseFloat(input.value));
+            const sp2Values = Array.from(document.getElementsByClassName('sp2')).map(input => parseFloat(input.value));
+            const sp3Values = Array.from(document.getElementsByClassName('sp3')).map(input => parseFloat(input.value));
+
+            // Calculate blend for each sieve size
+            const blendSizes = [
+                '50.8mm', '38.1mm', '25.4mm', '19mm', '12.5mm', '9.5mm', 
+                '4.75mm', '2.36mm', '1.18mm', '0.6mm', '0.3mm', '0.15mm', '0.075mm'
+            ];
+
+            blendSizes.forEach((size, index) => {
+                const blendValue = (sp1Values[index] * prop1) + 
+                                (sp2Values[index] * prop2) + 
+                                (sp3Values[index] * prop3);
+                document.getElementById(`blend-${size}`).textContent = blendValue.toFixed(1);
+            });
+        }
+    </script>
+</body>
+</html>

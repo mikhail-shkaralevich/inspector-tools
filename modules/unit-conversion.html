@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Conversions</title>
+    <style>
+        .converter {
+            margin: 20px;
+        }
+
+        .converter label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .converter input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .converter select,
+        .converter input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .converter button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        /* Convert button - Blue */
+        .converter button.convert {
+            background-color: #007bff; /* Blue */
+        }
+
+        .converter button.convert:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        /* Swap button - Violet */
+        .converter button.swap {
+            background-color: #8a2be2; /* Violet */
+        }
+
+        .converter button.swap:hover {
+            background-color: #7b1fa2; /* Darker violet on hover */
+        }
+
+        /* Reset button - Red */
+        .converter button.reset {
+            background-color: #ff0000; /* Red */
+        }
+
+        .converter button.reset:hover {
+            background-color: #cc0000; /* Darker red on hover */
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Unit Conversions</h2>
+    <p>Convert measurements for Mass, Volume, Density, Distance, or Speed.</p>
+    <div class="converter">
+        <!-- Radio Buttons for Measurement Type -->
+        <label>Measurement Type:</label>
+        <label>
+            <input type="radio" name="measurement-type" value="mass" checked> Mass
+        </label>
+        <label>
+            <input type="radio" name="measurement-type" value="volume"> Volume
+        </label>
+        <label>
+            <input type="radio" name="measurement-type" value="density"> Density
+        </label>
+        <label>
+            <input type="radio" name="measurement-type" value="distance"> Distance
+        </label>
+        <label>
+            <input type="radio" name="measurement-type" value="speed"> Speed
+        </label>
+
+        <!-- From Unit and To Unit Dropdowns -->
+        <label for="from-unit">From Unit:</label>
+        <select id="from-unit"></select>
+
+        <label for="to-unit">To Unit:</label>
+        <select id="to-unit"></select>
+
+        <!-- Input Value -->
+        <label for="input-value">Input Value:</label>
+        <input type="number" id="input-value" placeholder="Enter value">
+
+        <!-- Buttons -->
+        <button onclick="convertUnits()" class="convert">Convert</button>
+        <button onclick="swapUnits()" class="swap">Swap Units</button>
+        <button onclick="resetInput()" class="reset">Reset</button>
+
+        <!-- Result Display -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Unit Conversion Data
+        const units = {
+            mass: [
+                { name: "Kilograms (kg)", factor: 1 },
+                { name: "Grams (g)", factor: 1000 },
+                { name: "Pounds (lb)", factor: 2.20462 },
+                { name: "Ounces (oz)", factor: 35.274 }
+            ],
+            volume: [
+                { name: "Liters (L)", factor: 1 },
+                { name: "Milliliters (mL)", factor: 1000 },
+                { name: "Gallons (gal)", factor: 0.264172 },
+                { name: "Cubic Meters (m³)", factor: 0.001 },
+                { name: "Cubic Yards (yd³)", factor: 0.00130795 },
+                { name: "Cubic Feet (ft³)", factor: 0.0353147 }
+            ],
+            density: [
+                { name: "Kilograms per Cubic Meter (kg/m³)", factor: 1 },
+                { name: "Grams per Cubic Centimeter (g/cm³)", factor: 0.001 },
+                { name: "Pounds per Cubic Foot (lb/ft³)", factor: 0.062428 }
+            ],
+            distance: [
+                { name: "Meters (m)", factor: 1 },
+                { name: "Kilometers (km)", factor: 0.001 },
+                { name: "Miles (mi)", factor: 0.000621371 },
+                { name: "Feet (ft)", factor: 3.28084 },
+                { name: "Inches (in)", factor: 39.3701 }
+            ],
+            speed: [
+                { name: "Meters per Second (m/s)", factor: 1 },
+                { name: "Kilometers per Hour (km/h)", factor: 3.6 },
+                { name: "Miles per Hour (mph)", factor: 2.23694 },
+                { name: "Feet per Second (ft/s)", factor: 3.28084 }
+            ]
+        };
+
+        // Default units for each measurement type
+        const defaultUnits = {
+            mass: { from: "Pounds (lb)", to: "Grams (g)" },
+            volume: { from: "Cubic Yards (yd³)", to: "Cubic Feet (ft³)" },
+            density: { from: "Grams per Cubic Centimeter (g/cm³)", to: "Pounds per Cubic Foot (lb/ft³)" },
+            distance: { from: "Miles (mi)", to: "Feet (ft)" },
+            speed: { from: "Meters per Second (m/s)", to: "Kilometers per Hour (km/h)" }
+        };
+
+        // Get DOM elements
+        const measurementTypeRadios = document.querySelectorAll('input[name="measurement-type"]');
+        const fromUnit = document.getElementById("from-unit");
+        const toUnit = document.getElementById("to-unit");
+        const inputValue = document.getElementById("input-value");
+        const result = document.getElementById("result");
+
+        // Function to populate units based on selected measurement type
+        function populateUnits() {
+            const selectedType = document.querySelector('input[name="measurement-type"]:checked').value;
+            const unitList = units[selectedType];
+
+            // Reset input value
+            inputValue.value = "";
+
+            // Populate From Unit dropdown
+            fromUnit.innerHTML = unitList.map(unit => `<option value="${unit.factor}" ${unit.name === defaultUnits[selectedType].from ? "selected" : ""}>${unit.name}</option>`).join("");
+
+            // Populate To Unit dropdown
+            toUnit.innerHTML = unitList.map(unit => `<option value="${unit.factor}" ${unit.name === defaultUnits[selectedType].to ? "selected" : ""}>${unit.name}</option>`).join("");
+        }
+
+        // Add event listeners to radio buttons
+        measurementTypeRadios.forEach(radio => {
+            radio.addEventListener("change", populateUnits);
+        });
+
+        // Populate units on page load
+        populateUnits();
+
+        // Conversion function
+        function convertUnits() {
+            const inputValueNum = parseFloat(inputValue.value);
+            const fromFactor = parseFloat(fromUnit.value);
+            const toFactor = parseFloat(toUnit.value);
+            const toUnitName = toUnit.options[toUnit.selectedIndex].text; // Get the selected "To Unit" name
+
+            if (isNaN(inputValueNum)) {
+                result.innerText = "Please enter a valid number.";
+                result.style.color = "red"; // Highlight error message in red
+                return;
+            }
+
+            const convertedValue = (inputValueNum / fromFactor) * toFactor;
+            result.innerText = `Result: ${convertedValue.toFixed(4)} ${toUnitName}`; // Include unit name
+            result.style.color = "green"; // Set result text color to green
+        }
+
+        // Reset function
+        function resetInput() {
+            inputValue.value = ""; // Clear the input field
+            result.innerText = ""; // Clear the result display
+        }
+
+        // Swap units function
+        function swapUnits() {
+            const fromIndex = fromUnit.selectedIndex; // Get the selected index of "From Unit"
+            const toIndex = toUnit.selectedIndex; // Get the selected index of "To Unit"
+
+            // Swap the selected indices
+            fromUnit.selectedIndex = toIndex;
+            toUnit.selectedIndex = fromIndex;
+        }
+    </script>
+</body>
+</html>

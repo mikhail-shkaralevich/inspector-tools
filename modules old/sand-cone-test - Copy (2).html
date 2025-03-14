@@ -1,0 +1,628 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Compaction Test (Using Sand Cone)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: #333;
+      display: inline-block;
+      margin-right: 20px;
+    }
+    h2 {
+      color: #555;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    input[type="button"] {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    input[type="button"].reset {
+      background-color: #f44336;
+    }
+    input[type="button"]:hover {
+      opacity: 0.8;
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    .navigation {
+      margin-bottom: 20px;
+    }
+    .navigation select {
+      padding: 5px;
+      font-size: 16px;
+    }
+    input[readonly] {
+      background-color: #f9f9f9;
+      cursor: not-allowed;
+    }
+
+    /* Style for the green text label */
+        .green-label {
+            color: green;
+            font-size: 16px;
+            font-weight: bold;
+    }
+  </style>
+
+  <style>
+    .button-container {
+         display: flex;
+         gap: 10px; /* Adds space between the buttons */
+         margin-top: 20px;
+        }
+  </style>
+
+</head>
+<body>
+  <h1>Field Compaction Test (Using Sand Cone)</h1>
+  <input type="button" value="Reset All" class="reset" id="reset-all-button">
+  <div class="navigation">
+    <label for="part-select">Go to Part:</label>
+    <select id="part-select">
+      <option value="part1">Part 1: General Information</option>
+      <option value="part2">Part 2: Surface Voids Determination</option>
+      <option value="part3">Part 3: In-Place Density</option>
+      <option value="part4">Part 4: Moisture Content Determination</option>
+      <option value="part5">Part 5: Dry Density and Relative Compaction</option>
+    </select>
+  </div>
+
+  <form id="compaction-form">
+    <!-- Part 1: General Information -->
+    <div id="part1" class="page active">
+      <h2>Part 1: General Information</h2>
+      <table>
+        <tr>
+          <td class="green-label">Sample No.</td>
+          <td><input type="text" name="sample_no"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Project No.</td>
+          <td><input type="text" name="project_no"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Description</td>
+          <td><input type="text" name="description"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Color</td>
+          <td><input type="text" name="color"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Type of Sample</td>
+          <td>
+            <select name="type_of_sample">
+              <option value="undisturbed">Undisturbed</option>
+              <option value="disturbed">Disturbed</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="green-label">Date</td>
+          <td><input type="date" name="date"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Station No.</td>
+          <td><input type="text" name="station_no"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Location</td>
+          <td><input type="text" name="location"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Elevation of Lift</td>
+          <td><input type="number" name="elevation_of_lift"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Finished Elevation</td>
+          <td><input type="number" name="finished_elevation"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Test Performed</td>
+          <td>
+            <select name="test_performed">
+              <option value="sand_cone">Sand Cone</option>
+              <option value="nuclear_gauge">Nuclear Gauge</option>
+              <option value="other">Other</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+      <input type="button" value="Reset Part 1" class="reset" data-part="part1">
+      <input type="button" value="Next" id="next-button-part1">
+    </div>
+
+    <!-- Part 2: Surface Voids Determination -->
+    <div id="part2" class="page">
+      <h2>Part 2: Surface Voids Determination</h2>
+      <table>
+        <tr>
+          <td class="green-label">Apparatus No.</td>
+          <td><input type="text" name="apparatus_no"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Sand + Container Before Determination (gram)</td>
+          <td><input type="number" step="0.1" name="mass_before"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Sand + Container After Determination (gram)</td>
+          <td><input type="number" step="0.1" name="mass_after"></td>
+        </tr>
+        <tr>
+          <td>Mass of Sand Used for Determination (gram)</td>
+          <td><input type="number" step="0.1" name="mass_used" readonly></td>
+        </tr>
+      </table>
+      <input type="button" value="Reset Part 2" class="reset" data-part="part2">
+      <input type="button" value="Next" id="next-button-part2">
+      </div>
+    </div>
+
+    <!-- Part 3: In-Place Density -->
+    <div id="part3" class="page">
+      <h2>Part 3: In-Place Density</h2>
+      <table>
+        <tr>
+          <td class="green-label">Tare Number</td>
+          <td><input type="text" name="tare_number"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Sand + Container Before Test (gram)</td>
+          <td><input type="number" step="0.1" name="mass_before_test"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Sand + Container After Test (gram)</td>
+          <td><input type="number" step="0.1" name="mass_after_test"></td>
+        </tr>
+        <tr>
+          <td>Mass of Sand Used for Test (gram)</td>
+          <td><input type="number" step="0.1" name="mass_used_test" readonly></td>
+        </tr>
+        <tr>
+          <td>Mass of Sand Used for Voids Determination (gram)</td>
+          <td><input type="number" step="0.1" name="mass_used_voids" readonly></td>
+        </tr>
+        <tr>
+          <td>Net Mass of Sand Used for Test (gram)</td>
+          <td><input type="number" step="0.1" name="net_mass_grams" readonly></td>
+        </tr>
+        <tr>
+          <td>Net Mass of Sand Used for Test (pounds)</td>
+          <td><input type="number" step="0.1" name="net_mass_pounds" readonly></td>
+        </tr>
+        <tr>
+          <td class="green-label">Loose Density of Sand (pounds per cubic foot)</td>
+          <td><input type="number" step="0.1" name="loose_density"></td>
+        </tr>
+        <tr>
+          <td>Volume of Hole (cubic feet)</td>
+          <td><input type="number" step="0.1" name="volume_hole" readonly></td>
+        </tr>
+        <tr>
+          <td>Depth of Hole (inches)</td>
+          <td><input type="number" step="0.1" name="depth_hole" readonly></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Wet Sample + Container (gram)</td>
+          <td><input type="number" step="0.1" name="mass_wet_sample_container"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Mass of Container (gram)</td>
+          <td><input type="number" step="0.1" name="mass_container"></td>
+        </tr>
+        <tr>
+          <td>Mass of Wet Sample from Hole (gram)</td>
+          <td><input type="number" step="0.1" name="mass_wet_sample" readonly></td>
+        </tr>
+        <tr>
+        <td>Mass of Wet Sample from Hole (pounds)</td>
+          <td><input type="number" step="0.1" name="mass_wet_sample_pounds" readonly></td>
+        </tr>
+        <tr>
+          <td>In-Place Density of Wet Sample (pounds per cubic foot)</td>
+          <td><input type="number" step="0.1" name="in_place_density" readonly></td>
+        </tr>
+      </table>
+      <input type="button" value="Reset Part 3" class="reset" data-part="part3">
+      <input type="button" value="Next" id="next-button-part3">
+    </div>
+
+    <!-- Part 4: Moisture Content Determination -->
+    <div id="part4" class="page">
+      <h2>Part 4: Moisture Content Determination</h2>
+      <table>
+        <tr>
+          <td class="green-label">Tare Number</td>
+          <td><input type="text" name="tare_number_part4"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Soil Sample + Container (gram)</td>
+          <td><input type="number" step="0.1" name="soil_sample_container"></td>
+        </tr>
+        <tr>
+          <td class="green-label">O D (Oven-Dried) Soil + Container (gram)</td>
+          <td><input type="number" step="0.1" name="od_soil_container"></td>
+        </tr>
+        <tr>
+          <td>Mass of Moisture (gram)</td>
+          <td><input type="number" step="0.1" name="mass_moisture" readonly></td>
+        </tr>
+        <tr>
+          <td class="green-label">Container Weight (gram)</td>
+          <td><input type="number" step="0.1" name="container_weight"></td>
+        </tr>
+        <tr>
+          <td>Mass of O D (Oven-Dried) Soil (gram)</td>
+          <td><input type="number" step="0.1" name="mass_od_soil" readonly></td>
+        </tr>
+        <tr>
+          <td>Moisture Content (%)</td>
+          <td><input type="number" step="0.1" name="moisture_content" readonly></td>
+        </tr>
+      </table>
+      <input type="button" value="Reset Part 4" class="reset" data-part="part4">
+      <input type="button" value="Next" id="next-button-part4">
+    </div>
+
+    <!-- Part 5: Dry Density and Relative Compaction -->
+    <div id="part5" class="page">
+      <h2>Part 5: Dry Density and Relative Compaction</h2>
+      <table>
+        <tr>
+          <td>In-Place Density of Wet Sample (pounds per cubic foot)</td>
+          <td><input type="number" step="0.1" name="in_place_density_part5" readonly></td>
+        </tr>
+        <tr>
+          <td>Moisture Content (%)</td>
+          <td><input type="number" step="0.1" name="moisture_content_part5" readonly></td>
+        </tr>
+        <tr>
+          <td>Dry Density (pounds per cubic foot)</td>
+          <td><input type="number" step="0.1" name="dry_density" readonly></td>
+        </tr>
+        <tr>
+          <td class="green-label">Maximum Dry Density (Proctor Results) (pounds per cubic foot)</td>
+          <td><input type="number" step="0.1" name="max_dry_density"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Optimum Moisture Content (LAB Proctor Results) (%)</td>
+          <td><input type="number" step="0.1" name="optimum_moisture_content"></td>
+        </tr>
+        <tr>
+          <td class="green-label">Minimum Relative Compaction Requirement (%)</td>
+          <td><input type="number" step="0.1" name="min_relative_compaction" value="95"></td>
+        </tr>
+        <tr>
+          <td>Relative Compaction (%)</td>
+          <td><input type="number" step="0.1" name="relative_compaction" readonly></td>
+        </tr>
+        <tr>
+          <td>RESULT:</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+          <div id="result-message" style="font-weight: bold; color: green;"></div>
+          </td>
+        </tr>
+      </table>
+      <input type="button" value="Reset Part 5" class="reset" data-part="part5">
+      <input type="button" value="Go to Part 1" id="next-button-part5">
+    </div>
+
+    <br>
+    <input type="button" value="Save" id="save-button">
+  </form>
+
+  <script>
+    // JavaScript to handle navigation between parts
+    const partSelect = document.getElementById('part-select');
+    const pages = document.querySelectorAll('.page');
+
+    partSelect.addEventListener('change', function () {
+      const selectedPart = this.value;
+      pages.forEach(page => {
+        if (page.id === selectedPart) {
+          page.classList.add('active');
+        } else {
+          page.classList.remove('active');
+        }
+      });
+    });
+
+    // Function to navigate to the next part
+    function goToNextPart(currentPart) {
+      const parts = ['part1', 'part2', 'part3', 'part4', 'part5'];
+      const currentIndex = parts.indexOf(currentPart);
+
+      // Determine the next part
+      let nextPart;
+      if (currentIndex === parts.length - 1) {
+        // If current part is Part 5, go back to Part 1
+        nextPart = parts[0];
+      } else {
+        // Otherwise, go to the next part
+        nextPart = parts[currentIndex + 1];
+      }
+
+      // Update the active page and dropdown
+      document.getElementById(nextPart).classList.add('active');
+      document.getElementById(currentPart).classList.remove('active');
+      partSelect.value = nextPart; // Update the dropdown
+    }
+
+    // Add event listeners to Next buttons
+    document.getElementById('next-button-part1').addEventListener('click', () => goToNextPart('part1'));
+    document.getElementById('next-button-part2').addEventListener('click', () => goToNextPart('part2'));
+    document.getElementById('next-button-part3').addEventListener('click', () => goToNextPart('part3'));
+    document.getElementById('next-button-part4').addEventListener('click', () => goToNextPart('part4'));
+    document.getElementById('next-button-part5').addEventListener('click', () => goToNextPart('part5'));
+
+
+    // JavaScript to handle saving data
+    const saveButton = document.getElementById('save-button');
+    const form = document.getElementById('compaction-form');
+
+    saveButton.addEventListener('click', function () {
+      const formData = new FormData(form);
+      const data = {};
+
+      // Convert FormData to a plain object
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
+
+      // Save data to localStorage
+      localStorage.setItem('compactionTestData', JSON.stringify(data));
+      alert('Data saved successfully!');
+    });
+
+    // Optional: Load saved data when the page loads
+    window.addEventListener('load', function () {
+      const savedData = localStorage.getItem('compactionTestData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        for (const key in data) {
+          const input = form.querySelector(`[name="${key}"]`);
+          if (input) {
+            input.value = data[key];
+          }
+        }
+        alert('Saved data loaded!');
+      }
+    });
+
+    // JavaScript to handle resetting individual parts
+    const resetButtons = document.querySelectorAll('.reset[data-part]');
+    resetButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const part = this.getAttribute('data-part');
+        const inputs = document.querySelectorAll(`#${part} input, #${part} select`);
+        inputs.forEach(input => {
+          if (input.type === 'text' || input.type === 'number' || input.tagName === 'SELECT') {
+            input.value = '';
+          }
+        });
+        alert(`Part ${part.slice(-1)} reset successfully!`);
+      });
+    });
+
+    // JavaScript to handle resetting all parts
+    const resetAllButton = document.getElementById('reset-all-button');
+    resetAllButton.addEventListener('click', function () {
+      const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select');
+      inputs.forEach(input => {
+        if (input.type === 'text' || input.type === 'number' || input.tagName === 'SELECT') {
+          input.value = '';
+        }
+      });
+      localStorage.removeItem('compactionTestData');
+      alert('All parts reset successfully!');
+    });
+
+    // JavaScript to dynamically calculate Mass of Sand Used for Determination (Part 2)
+    const massBeforeInput = document.querySelector('input[name="mass_before"]');
+    const massAfterInput = document.querySelector('input[name="mass_after"]');
+    const massUsedInput = document.querySelector('input[name="mass_used"]');
+
+    function calculateMassUsed() {
+      const massBefore = parseFloat(massBeforeInput.value);
+      const massAfter = parseFloat(massAfterInput.value);
+
+      if (!isNaN(massBefore) && !isNaN(massAfter)) {
+        const massUsed = (massBefore - massAfter).toFixed(1); // Round to 0.1 grams
+        massUsedInput.value = massUsed;
+      } else {
+        massUsedInput.value = '';
+      }
+    }
+
+    massBeforeInput.addEventListener('input', calculateMassUsed);
+    massAfterInput.addEventListener('input', calculateMassUsed);
+
+// JavaScript to dynamically calculate fields in Part 3
+const massBeforeTestInput = document.querySelector('input[name="mass_before_test"]');
+const massAfterTestInput = document.querySelector('input[name="mass_after_test"]');
+const massUsedTestInput = document.querySelector('input[name="mass_used_test"]');
+const massUsedVoidsInput = document.querySelector('input[name="mass_used_voids"]');
+const netMassGramsInput = document.querySelector('input[name="net_mass_grams"]');
+const netMassPoundsInput = document.querySelector('input[name="net_mass_pounds"]');
+const looseDensityInput = document.querySelector('input[name="loose_density"]');
+const volumeHoleInput = document.querySelector('input[name="volume_hole"]');
+const depthHoleInput = document.querySelector('input[name="depth_hole"]');
+const massWetSampleContainerInput = document.querySelector('input[name="mass_wet_sample_container"]');
+const massContainerInput = document.querySelector('input[name="mass_container"]');
+const massWetSampleInput = document.querySelector('input[name="mass_wet_sample"]');
+const massWetSamplePoundsInput = document.querySelector('input[name="mass_wet_sample_pounds"]');
+const inPlaceDensityInput = document.querySelector('input[name="in_place_density"]');
+
+function calculatePart3Fields() {
+  // Mass of Sand Used for Test
+  const massBeforeTest = parseFloat(massBeforeTestInput.value);
+  const massAfterTest = parseFloat(massAfterTestInput.value);
+  const massUsedTest = !isNaN(massBeforeTest) && !isNaN(massAfterTest) ? (massBeforeTest - massAfterTest).toFixed(1) : '';
+  massUsedTestInput.value = massUsedTest;
+
+  // Mass of Sand Used for Voids Determination (from Part 2)
+  const massUsedVoids = parseFloat(massUsedInput.value);
+  massUsedVoidsInput.value = !isNaN(massUsedVoids) ? massUsedVoids.toFixed(1) : '';
+
+  // Net Mass of Sand Used for Test (grams and pounds)
+  const netMassGrams = !isNaN(massUsedTest) && !isNaN(massUsedVoids) ? (massUsedTest - massUsedVoids).toFixed(1) : '';
+  netMassGramsInput.value = netMassGrams;
+  const netMassPounds = !isNaN(netMassGrams) ? (netMassGrams * 0.00220462).toFixed(1) : '';
+  netMassPoundsInput.value = netMassPounds;
+
+  // Volume of Hole
+  const looseDensity = parseFloat(looseDensityInput.value);
+  const looseDensityGrams = !isNaN(looseDensity) ? looseDensity * 453.592 : 0; // Convert pounds to grams (1 pound = 453.592 grams)
+  const volumeHole = !isNaN(netMassGrams) && looseDensityGrams > 0 ? (netMassGrams / looseDensityGrams).toFixed(3) : '';
+  volumeHoleInput.value = volumeHole;
+
+  // Depth of Hole (assuming a cylindrical hole with radius = 3 inches)
+  const radiusInches = 3; // Radius of the hole in inches
+  const radiusFeet = radiusInches / 12; // Convert radius to feet
+  const depthHole = !isNaN(volumeHole) ? (12 * volumeHole / (Math.PI * Math.pow(radiusFeet, 2))).toFixed(2) : '';
+  depthHoleInput.value = depthHole;
+
+  // Mass of Wet Sample from Hole (gram)
+  const massWetSampleContainer = parseFloat(massWetSampleContainerInput.value);
+  const massContainer = parseFloat(massContainerInput.value);
+  const massWetSample = !isNaN(massWetSampleContainer) && !isNaN(massContainer) ? (massWetSampleContainer - massContainer).toFixed(1) : '';
+  massWetSampleInput.value = massWetSample;
+
+  // Mass of Wet Sample from Hole (pounds)
+  const massWetSamplePounds = !isNaN(massWetSample) ? (massWetSample * 0.00220462).toFixed(1) : '';
+  document.querySelector('input[name="mass_wet_sample_pounds"]').value = massWetSamplePounds;
+
+  // In-Place Density of Wet Sample (pounds per cubic foot)
+  const inPlaceDensity = !isNaN(massWetSamplePounds) && !isNaN(volumeHole) && volumeHole > 0 ? (massWetSamplePounds / volumeHole).toFixed(1) : '';
+  inPlaceDensityInput.value = inPlaceDensity;
+}
+
+// Add event listeners to all relevant input fields in Part 3
+const part3Inputs = document.querySelectorAll('#part3 input[type="number"]');
+part3Inputs.forEach(input => {
+  input.addEventListener('input', calculatePart3Fields);
+});
+
+    // JavaScript to dynamically calculate fields in Part 4
+    const soilSampleContainerInput = document.querySelector('input[name="soil_sample_container"]');
+    const odSoilContainerInput = document.querySelector('input[name="od_soil_container"]');
+    const massMoistureInput = document.querySelector('input[name="mass_moisture"]');
+    const containerWeightInput = document.querySelector('input[name="container_weight"]');
+    const massOdSoilInput = document.querySelector('input[name="mass_od_soil"]');
+    const moistureContentInput = document.querySelector('input[name="moisture_content"]');
+
+    function calculatePart4Fields() {
+      // Mass of Moisture
+      const soilSampleContainer = parseFloat(soilSampleContainerInput.value);
+      const odSoilContainer = parseFloat(odSoilContainerInput.value);
+      const massMoisture = !isNaN(soilSampleContainer) && !isNaN(odSoilContainer) ? (soilSampleContainer - odSoilContainer).toFixed(1) : '';
+      massMoistureInput.value = massMoisture;
+
+      // Mass of O D (Oven-Dried) Soil
+      const containerWeight = parseFloat(containerWeightInput.value);
+      const massOdSoil = !isNaN(odSoilContainer) && !isNaN(containerWeight) ? (odSoilContainer - containerWeight).toFixed(1) : '';
+      massOdSoilInput.value = massOdSoil;
+
+      // Moisture Content (%)
+      const moistureContent = !isNaN(massMoisture) && !isNaN(massOdSoil) && massOdSoil > 0 ? ((massMoisture / massOdSoil) * 100).toFixed(1) : '';
+      moistureContentInput.value = moistureContent;
+    }
+
+    // Add event listeners to all relevant input fields in Part 4
+    const part4Inputs = document.querySelectorAll('#part4 input[type="number"]');
+    part4Inputs.forEach(input => {
+      input.addEventListener('input', calculatePart4Fields);
+    });
+
+    // JavaScript to dynamically calculate fields in Part 5
+    const inPlaceDensityPart5Input = document.querySelector('input[name="in_place_density_part5"]');
+    const moistureContentPart5Input = document.querySelector('input[name="moisture_content_part5"]');
+    const dryDensityInput = document.querySelector('input[name="dry_density"]');
+    const maxDryDensityInput = document.querySelector('input[name="max_dry_density"]');
+    const optimumMoistureContentInput = document.querySelector('input[name="optimum_moisture_content"]');
+    const minRelativeCompactionInput = document.querySelector('input[name="min_relative_compaction"]');
+    const relativeCompactionInput = document.querySelector('input[name="relative_compaction"]');
+    const resultMessage = document.getElementById('result-message');
+    
+    function calculatePart5Fields() {
+      // In-Place Density of Wet Sample (from Part 3)
+      const inPlaceDensity = parseFloat(inPlaceDensityInput.value);
+      inPlaceDensityPart5Input.value = !isNaN(inPlaceDensity) ? inPlaceDensity.toFixed(1) : '';
+
+      // Moisture Content (from Part 4)
+      const moistureContent = parseFloat(moistureContentInput.value);
+      moistureContentPart5Input.value = !isNaN(moistureContent) ? moistureContent.toFixed(1) : '';
+
+      // Dry Density
+      const dryDensity = !isNaN(inPlaceDensity) && !isNaN(moistureContent) ? (inPlaceDensity / (1 + (moistureContent / 100))).toFixed(1) : '';
+      dryDensityInput.value = dryDensity;
+
+      // Maximum Dry Density (Proctor Results)
+      const maxDryDensity = parseFloat(maxDryDensityInput.value);
+
+      // Relative Compaction
+      const relativeCompaction = !isNaN(dryDensity) && !isNaN(maxDryDensity) && maxDryDensity > 0 ? ((dryDensity / maxDryDensity) * 100).toFixed(1) : '';
+      relativeCompactionInput.value = relativeCompaction;
+    
+      // Minimum Relative Compaction Requirement
+      const minRelativeCompaction = parseFloat(minRelativeCompactionInput.value);
+
+      // Result Message
+      if (!isNaN(relativeCompaction) && !isNaN(minRelativeCompaction)) {
+        if (relativeCompaction >= minRelativeCompaction) {
+          resultMessage.textContent = "Compaction PASSED the Minimum Relative Compaction Requirement";
+          resultMessage.style.color = "green"; // Green for PASSED
+        } else {
+          resultMessage.textContent = "Compaction FAILED the Minimum Relative Compaction Requirement";
+          resultMessage.style.color = "red"; // Red for FAILED
+        }
+       } else {
+         resultMessage.textContent = ""; // Clear the message if values are invalid
+       }
+      }
+
+      // Add event listeners to all relevant input fields in Part 5
+      const part5Inputs = document.querySelectorAll('#part5 input[type="number"]');
+      part5Inputs.forEach(input => {
+      input.addEventListener('input', calculatePart5Fields);
+      });
+
+    // Initialize Part 5 calculations when the page loads
+    calculatePart5Fields();
+  </script>
+</body>
+</html>

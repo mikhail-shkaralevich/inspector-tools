@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Coordinates Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .reset-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+        .reset-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPS Coordinates Converter</h1>
+
+ 	<!-- DMS Format (e.g., 19°38'52.26"N) to Decimal Degrees -->
+        <h2>DMS Format to Decimal Degrees</h2>
+        <div class="input-group">
+            <label for="dmsFormat">DMS Format (e.g., 19°38'52.26"N):</label>
+            <input type="text" id="dmsFormat" placeholder="e.g., 19°38'52.26"N">
+        </div>
+        <button onclick="convertDMSFormatToDecimal()">Convert to Decimal Degrees</button>
+        <button class="reset-button" onclick="resetDMSFormat()">Reset</button>
+        <div class="result">
+            <label for="decimalDegreesFromDMS">Decimal Degrees:</label>
+            <input type="text" id="decimalDegreesFromDMS" readonly>
+        </div>
+
+        <!-- DMS to Decimal Degrees -->
+        <h2>DMS to Decimal Degrees</h2>
+        <div class="input-group">
+            <label for="degrees">Degrees:</label>
+            <input type="number" id="degrees" placeholder="Degrees">
+        </div>
+        <div class="input-group">
+            <label for="minutes">Minutes:</label>
+            <input type="number" id="minutes" placeholder="Minutes (default: 0)">
+        </div>
+        <div class="input-group">
+            <label for="seconds">Seconds:</label>
+            <input type="number" id="seconds" placeholder="Seconds (default: 0)">
+        </div>
+        <button onclick="convertToDecimal()">Convert to Decimal Degrees</button>
+        <button class="reset-button" onclick="resetDMS()">Reset</button>
+        <div class="result">
+            <label for="decimalDegrees">Decimal Degrees:</label>
+            <input type="text" id="decimalDegrees" readonly>
+        </div>
+  
+        <!-- Decimal Degrees to DMS -->
+        <h2>Decimal Degrees to DMS</h2>
+        <div class="input-group">
+            <label for="decimalInput">Decimal Degrees:</label>
+            <input type="number" id="decimalInput" placeholder="Decimal Degrees">
+        </div>
+        <button onclick="convertToDMS()">Convert to DMS</button>
+        <button class="reset-button" onclick="resetDecimal()">Reset</button>
+        <div class="result">
+            <label for="dmsOutput">Degrees, Minutes, Seconds:</label>
+            <input type="text" id="dmsOutput" readonly>
+        </div>
+    </div>
+
+    <script>
+        // Convert DMS to Decimal Degrees
+        function convertToDecimal() {
+            const degrees = parseFloat(document.getElementById('degrees').value) || 0;
+            const minutes = parseFloat(document.getElementById('minutes').value) || 0;
+            const seconds = parseFloat(document.getElementById('seconds').value) || 0;
+
+            if (isNaN(degrees)) {
+                alert("Please enter a valid number for degrees.");
+                return;
+            }
+
+            const decimalDegrees = degrees + (minutes / 60) + (seconds / 3600);
+            document.getElementById('decimalDegrees').value = decimalDegrees.toFixed(9);
+        }
+
+        // Convert DMS Format (e.g., 19°38'52.26"N) to Decimal Degrees
+        function convertDMSFormatToDecimal() {
+            const dmsFormat = document.getElementById('dmsFormat').value.trim();
+            const regex = /^(\d+)°(\d+)'([\d.]+)"([NSEW])$/i;
+
+            if (!regex.test(dmsFormat)) {
+                alert("Invalid DMS format. Please use the format: 19°38'52.26\"N");
+                return;
+            }
+
+            const matches = dmsFormat.match(regex);
+            const degrees = parseFloat(matches[1]);
+            const minutes = parseFloat(matches[2]);
+            const seconds = parseFloat(matches[3]);
+            const direction = matches[4].toUpperCase();
+
+            let decimalDegrees = degrees + (minutes / 60) + (seconds / 3600);
+
+            // Adjust for direction (S and W are negative)
+            if (direction === 'S' || direction === 'W') {
+                decimalDegrees = -decimalDegrees;
+            }
+
+            document.getElementById('decimalDegreesFromDMS').value = decimalDegrees.toFixed(9);
+        }
+
+        // Convert Decimal Degrees to DMS
+        function convertToDMS() {
+            const decimalDegrees = parseFloat(document.getElementById('decimalInput').value);
+
+            if (isNaN(decimalDegrees)) {
+                alert("Please enter a valid number for decimal degrees.");
+                return;
+            }
+
+            const absDecimal = Math.abs(decimalDegrees);
+            const degrees = Math.floor(absDecimal);
+            const remaining = absDecimal - degrees;
+            const minutes = Math.floor(remaining * 60);
+            const seconds = ((remaining * 60) - minutes) * 60;
+
+            // Determine direction
+            let direction = '';
+            if (decimalDegrees >= 0) {
+                direction = 'N';
+            } else {
+                direction = 'S';
+            }
+
+            document.getElementById('dmsOutput').value = `${degrees}°${minutes}'${seconds.toFixed(2)}"${direction}`;
+        }
+
+        // Reset DMS to Decimal Degrees section
+        function resetDMS() {
+            document.getElementById('degrees').value = '';
+            document.getElementById('minutes').value = '';
+            document.getElementById('seconds').value = '';
+            document.getElementById('decimalDegrees').value = '';
+        }
+
+        // Reset DMS Format section
+        function resetDMSFormat() {
+            document.getElementById('dmsFormat').value = '';
+            document.getElementById('decimalDegreesFromDMS').value = '';
+        }
+
+        // Reset Decimal Degrees to DMS section
+        function resetDecimal() {
+            document.getElementById('decimalInput').value = '';
+            document.getElementById('dmsOutput').value = '';
+        }
+    </script>
+</body>
+</html>
