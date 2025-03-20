@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asphalt Mixture Sampling Flash Cards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .flashcard {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .choices {
+            margin: 10px 0;
+        }
+        .choice {
+            display: block;
+            margin: 5px 0;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #addQuestionForm {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+        #deleteButton {
+            display: none; /* Hidden until answer is checked */
+        }
+    </style>
+</head>
+<body>
+    <h1>Asphalt Mixture Sampling Flash Cards</h1>
+    <button onclick="window.location.href='FSTQP.html'">Back to Main Menu</button>
+    
+    <div class="flashcard">
+        <div id="question"></div>
+        <div class="choices" id="choices"></div>
+        <button onclick="checkAnswer()">Answer</button>
+        <button onclick="nextQuestion()">Next Question</button>
+        <button id="deleteButton" onclick="deleteQuestion()">Delete Question</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <div id="addQuestionForm">
+        <h3>Add New Asphalt Question</h3>
+        <input type="text" id="newQuestion" placeholder="Enter question" style="width: 100%; margin: 5px 0;">
+        <input type="text" id="choice1" placeholder="Choice A" style="width: 100%; margin: 5px 0;">
+        <input type="text" id="choice2" placeholder="Choice B" style="width: 100%; margin: 5px 0;">
+        <input type="text" id="choice3" placeholder="Choice C" style="width: 100%; margin: 5px 0;">
+        <input type="text" id="choice4" placeholder="Choice D" style="width: 100%; margin: 5px 0;">
+        <input type="number" id="correctAnswer" placeholder="Correct answer number (1-4)" min="1" max="4" style="width: 100%; margin: 5px 0;">
+        <button onclick="addQuestion()">Add Question</button>
+    </div>
+
+    <script>
+        // Encrypted password (Base64 encoded "Pass$8word")
+        const encryptedPassword = "UGFzcyQ4d29yZA==";
+
+        // Define default questions
+        const defaultQuestions = [
+            {
+                question: "What is the minimum sample size for asphalt mixture?",
+                choices: ["5 lbs", "10 lbs", "15 lbs", "20 lbs"],
+                correct: 2
+            },
+            {
+                question: "What temperature range is ideal for asphalt sampling?",
+                choices: ["200-250°F", "250-300°F", "300-350°F", "350-400°F"],
+                correct: 2
+            }
+        ];
+
+        // Load questions from localStorage, or use defaults if empty or invalid
+        let questions = (() => {
+            const stored = localStorage.getItem('asphaltQuestions');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultQuestions;
+                } catch (e) {
+                    console.error('Error parsing localStorage data:', e);
+                    return defaultQuestions;
+                }
+            }
+            return defaultQuestions;
+        })();
+
+        let currentQuestion = 0;
+        let selectedAnswer = null;
+
+        function displayQuestion() {
+            if (questions.length === 0) {
+                document.getElementById('question').textContent = "No questions available";
+                document.getElementById('choices').innerHTML = "";
+                document.getElementById('deleteButton').style.display = 'none';
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            let choicesHTML = '';
+            q.choices.forEach((choice, index) => {
+                choicesHTML += `
+                    <div class="choice">
+                        <input type="radio" name="answer" id="choice${index}" value="${index}">
+                        <label for="choice${index}">${choice}</label>
+                    </div>
+                `;
+            });
+            document.getElementById('choices').innerHTML = choicesHTML;
+            document.getElementById('result').textContent = '';
+            document.getElementById('deleteButton').style.display = 'none';
+            selectedAnswer = null;
+        }
+
+        function checkAnswer() {
+            const radios = document.getElementsByName('answer');
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    selectedAnswer = parseInt(radios[i].value);
+                    break;
+                }
+            }
+
+            if (selectedAnswer === null) {
+                document.getElementById('result').textContent = 'Please select an answer';
+                return;
+            }
+
+            const correctAnswer = questions[currentQuestion].correct;
+            document.getElementById('result').textContent = 
+                selectedAnswer === correctAnswer ? 'Correct' : 'Wrong';
+            document.getElementById('deleteButton').style.display = 'inline';
+        }
+
+        function nextQuestion() {
+            currentQuestion = Math.floor(Math.random() * questions.length);
+            displayQuestion();
+        }
+
+        function addQuestion() {
+            const question = document.getElementById('newQuestion').value;
+            const choice1 = document.getElementById('choice1').value;
+            const choice2 = document.getElementById('choice2').value;
+            const choice3 = document.getElementById('choice3').value;
+            const choice4 = document.getElementById('choice4').value;
+            const correct = parseInt(document.getElementById('correctAnswer').value) - 1;
+
+            if (question && choice1 && choice2 && choice3 && choice4 && !isNaN(correct) && correct >= 0 && correct <= 3) {
+                questions.push({
+                    question: question,
+                    choices: [choice1, choice2, choice3, choice4],
+                    correct: correct
+                });
+                
+                localStorage.setItem('asphaltQuestions', JSON.stringify(questions));
+                
+                document.getElementById('newQuestion').value = '';
+                document.getElementById('choice1').value = '';
+                document.getElementById('choice2').value = '';
+                document.getElementById('choice3').value = '';
+                document.getElementById('choice4').value = '';
+                document.getElementById('correctAnswer').value = '';
+                
+                alert('Question added successfully and saved!');
+                if (questions.length === 1) {
+                    currentQuestion = 0;
+                    displayQuestion();
+                }
+            } else {
+                alert('Please fill all fields correctly. Correct answer must be between 1 and 4.');
+            }
+        }
+
+        function deleteQuestion() {
+            const userInput = prompt('Enter password to delete this question:');
+            const decodedPassword = atob(encryptedPassword); // "Pass$8word"
+
+            if (userInput === decodedPassword) {
+                questions.splice(currentQuestion, 1);
+                localStorage.setItem('asphaltQuestions', JSON.stringify(questions));
+                alert('Question deleted successfully!');
+                if (questions.length > 0) {
+                    currentQuestion = Math.min(currentQuestion, questions.length - 1);
+                }
+                displayQuestion();
+            } else {
+                alert('Incorrect password. Question not deleted.');
+            }
+        }
+
+        displayQuestion();
+    </script>
+</body>
+</html>

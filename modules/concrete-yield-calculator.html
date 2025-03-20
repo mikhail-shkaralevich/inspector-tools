@@ -25,7 +25,7 @@
             margin-bottom: 8px;
             font-weight: bold;
         }
-        input[type="number"] {
+        input[type="text"] { /* Changed from type="number" to type="text" */
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
@@ -78,13 +78,13 @@
             color: red;
             font-weight: bold;
             margin-bottom: 8px;
-            font-size: 0.9em; /* Smaller font size */
+            font-size: 0.9em;
         }
         .si-weight-field, .si-volume-field {
-            display: none; /* Hide SI fields by default */
+            display: none;
         }
         .last-field-container {
-            display: block; /* Show last field by default */
+            display: block;
         }
         .reset-button {
             width: 100%;
@@ -99,6 +99,24 @@
         .reset-button:hover {
             background-color: #c82333;
         }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
+            max-width: 300px;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        .key {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .key:hover {
+            background-color: #e0e0e0;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +124,6 @@
 <div class="container">
     <h2>Concrete Yield Calculator</h2>
     <form id="yieldForm">
-        <!-- Unit Selection -->
         <div class="unit-selection">
             <label>
                 <input type="radio" name="unit" value="English" checked> English
@@ -116,123 +133,134 @@
             </label>
         </div>
 
-        <!-- Input Fields for English System -->
         <div id="englishFields">
             <label for="totalWeight">Total Weight of Concrete:</label>
             <div class="weight-fields">
-                <input type="number" id="pounds" placeholder="Pounds" step="1">
+                <input type="text" id="pounds" placeholder="Pounds" onfocus="setActiveInput(this)">
                 <span>lbs</span>
                 <span>or</span>
-                <input type="number" id="tons" placeholder="Tons" step="0.1">
+                <input type="text" id="tons" placeholder="Tons" onfocus="setActiveInput(this)">
                 <span>tons</span>
             </div>
 
             <label for="measuredDensity">Measured Density of the Freshly Mixed Concrete:</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="number" id="measuredDensityEnglish" step="0.1" required>
+                <input type="text" id="measuredDensityEnglish" onfocus="setActiveInput(this)" required>
                 <span>lbs/ft³</span>
             </div>
 
-            <!-- Read-only Yield Field -->
+            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
+            <div class="volume-fields">
+                <input type="text" id="designedVolumeFt" placeholder="Cubic Feet" onfocus="setActiveInput(this)">
+                <span>ft³</span>
+                <span>or</span>
+                <input type="text" id="designedVolumeYd" placeholder="Cubic Yards" onfocus="setActiveInput(this)">
+                <span>yd³</span>
+            </div>
+
+            <div class="keypad">
+                <div class="key" onclick="addNumber('1')">1</div>
+                <div class="key" onclick="addNumber('2')">2</div>
+                <div class="key" onclick="addNumber('3')">3</div>
+                <div class="key" onclick="addNumber('4')">4</div>
+                <div class="key" onclick="addNumber('5')">5</div>
+                <div class="key" onclick="addNumber('6')">6</div>
+                <div class="key" onclick="addNumber('7')">7</div>
+                <div class="key" onclick="addNumber('8')">8</div>
+                <div class="key" onclick="addNumber('9')">9</div>
+                <div class="key" onclick="addNumber('0')">0</div>
+                <div class="key" onclick="addNumber('.')">.</div>
+                <div class="key" onclick="clearInput()">C</div>
+            </div>
+
             <label for="yield">Yield:</label>
             <div class="result-field">
                 <input type="text" id="yieldEnglish" readonly>
                 <span>ft³</span>
             </div>
 
-            <!-- Designed Volume Input Fields -->
-            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
-            <div class="volume-fields">
-                <input type="number" id="designedVolumeFt" placeholder="Cubic Feet" step="0.1">
-                <span>ft³</span>
-                <span>or</span>
-                <input type="number" id="designedVolumeYd" placeholder="Cubic Yards" step="0.1">
-                <span>yd³</span>
-            </div>
-
-            <!-- Read-only Relative Yield Field -->
             <label for="relativeYield">Relative Yield:</label>
             <div class="result-field">
                 <input type="text" id="relativeYieldEnglish" readonly>
                 <span>Actual Volume / Design Volume</span>
             </div>
 
-            <!-- Note for Relative Yield -->
             <div class="note">
                 <div>Ry > 1.00: Indicates an excess of concrete was produced.</div>
                 <div>Ry < 1.00: Indicates the concrete batch was short of the designed volume.</div>
                 <div>Ry = 1.00: Indicates the delivered concrete matches the designed volume.</div>
             </div>
 
-            <!-- Last Field Container (for English system only) -->
             <div class="last-field-container">
-                <!-- Original Label -->
                 <label for="actualOverDesignVolume">ft³ of actual volume of concrete / yd³ of design volume of concrete:</label>
-
-                <!-- New Label -->
                 <div class="contractor-label">This is loosely referred by Contractor or Supplier as Yield:</div>
-
-                <!-- New Field: Actual Volume (ft³) / Design Volume (yd³) -->
                 <div class="result-field">
                     <input type="text" id="actualOverDesignVolumeEnglish" readonly>
                     <span>ft³/yd³</span>
                 </div>
             </div>
 
-            <!-- Reset Button for English System -->
             <button type="button" class="reset-button" onclick="resetEnglishFields()">Reset</button>
         </div>
 
-        <!-- Input Fields for SI System -->
         <div id="siFields" style="display: none;">
             <label for="totalWeight">Total Weight of Concrete:</label>
             <div class="weight-fields">
-                <input type="number" id="kilograms" placeholder="Kilograms" step="0.1">
+                <input type="text" id="kilograms" placeholder="Kilograms" onfocus="setActiveInput(this)">
                 <span>kg</span>
             </div>
 
             <label for="measuredDensity">Measured Density of the Freshly Mixed Concrete:</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="number" id="measuredDensitySI" step="0.1" required>
+                <input type="text" id="measuredDensitySI" onfocus="setActiveInput(this)" required>
                 <span>kg/m³</span>
             </div>
 
-            <!-- Read-only Yield Field -->
+            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
+            <div class="volume-fields">
+                <input type="text" id="designedVolumeM3" placeholder="Cubic Meters" onfocus="setActiveInput(this)">
+                <span>m³</span>
+            </div>
+
+            <div class="keypad">
+                <div class="key" onclick="addNumber('1')">1</div>
+                <div class="key" onclick="addNumber('2')">2</div>
+                <div class="key" onclick="addNumber('3')">3</div>
+                <div class="key" onclick="addNumber('4')">4</div>
+                <div class="key" onclick="addNumber('5')">5</div>
+                <div class="key" onclick="addNumber('6')">6</div>
+                <div class="key" onclick="addNumber('7')">7</div>
+                <div class="key" onclick="addNumber('8')">8</div>
+                <div class="key" onclick="addNumber('9')">9</div>
+                <div class="key" onclick="addNumber('0')">0</div>
+                <div class="key" onclick="addNumber('.')">.</div>
+                <div class="key" onclick="clearInput()">C</div>
+            </div>
+
             <label for="yield">Yield:</label>
             <div class="result-field">
                 <input type="text" id="yieldSI" readonly>
                 <span>m³</span>
             </div>
 
-            <!-- Designed Volume Input Fields -->
-            <label for="designedVolume">Designed Volume of Concrete the Batch was to Produce:</label>
-            <div class="volume-fields">
-                <input type="number" id="designedVolumeM3" placeholder="Cubic Meters" step="0.1">
-                <span>m³</span>
-            </div>
-
-            <!-- Read-only Relative Yield Field -->
             <label for="relativeYield">Relative Yield:</label>
             <div class="result-field">
                 <input type="text" id="relativeYieldSI" readonly>
                 <span>Actual Volume / Design Volume</span>
             </div>
 
-            <!-- Note for Relative Yield -->
             <div class="note">
                 <div>Ry > 1.00: Indicates an excess of concrete was produced.</div>
                 <div>Ry < 1.00: Indicates the concrete batch was short of the designed volume.</div>
                 <div>Ry = 1.00: Indicates the delivered concrete matches the designed volume.</div>
             </div>
 
-            <!-- Reset Button for SI System -->
             <button type="button" class="reset-button" onclick="resetSIFields()">Reset</button>
         </div>
     </form>
 </div>
 
 <script>
-    // Get all input fields
     const poundsInput = document.getElementById('pounds');
     const tonsInput = document.getElementById('tons');
     const kilogramsInput = document.getElementById('kilograms');
@@ -249,78 +277,107 @@
     const englishFields = document.getElementById('englishFields');
     const siFields = document.getElementById('siFields');
 
-    // Update fields based on selected unit system
+    let activeInput = null;
+
+    function setActiveInput(input) {
+        if (!input.readOnly) {
+            activeInput = input;
+        }
+    }
+
+    function addNumber(num) {
+        if (activeInput) {
+            let currentValue = activeInput.value || '';
+            // Only allow one decimal point
+            if (num === '.' && currentValue.includes('.')) {
+                return;
+            }
+            activeInput.value = currentValue + num;
+            updateRelatedField(activeInput.id);
+            calculateYield();
+        }
+    }
+
+    function clearInput() {
+        if (activeInput) {
+            activeInput.value = '';
+            updateRelatedField(activeInput.id);
+            calculateYield();
+        }
+    }
+
+    function updateRelatedField(inputId) {
+        const value = parseFloat(activeInput.value);
+        if (isNaN(value)) {
+            clearRelatedField(inputId);
+            return;
+        }
+
+        switch (inputId) {
+            case 'pounds':
+                tonsInput.value = (value / 2000).toFixed(1);
+                break;
+            case 'tons':
+                poundsInput.value = (value * 2000).toFixed(0);
+                break;
+            case 'designedVolumeFt':
+                designedVolumeYdInput.value = (value / 27).toFixed(2);
+                break;
+            case 'designedVolumeYd':
+                designedVolumeFtInput.value = (value * 27).toFixed(2);
+                break;
+        }
+    }
+
+    function clearRelatedField(inputId) {
+        switch (inputId) {
+            case 'pounds':
+                tonsInput.value = '';
+                break;
+            case 'tons':
+                poundsInput.value = '';
+                break;
+            case 'designedVolumeFt':
+                designedVolumeYdInput.value = '';
+                break;
+            case 'designedVolumeYd':
+                designedVolumeFtInput.value = '';
+                break;
+        }
+    }
+
     document.querySelectorAll('input[name="unit"]').forEach((radio) => {
         radio.addEventListener('change', () => {
             if (radio.value === "English") {
-                // Show English fields and hide SI fields
                 englishFields.style.display = "block";
                 siFields.style.display = "none";
             } else {
-                // Show SI fields and hide English fields
                 englishFields.style.display = "none";
                 siFields.style.display = "block";
             }
-            calculateYield(); // Recalculate yield when unit system changes
+            calculateYield();
+            activeInput = null;
         });
     });
 
-    // Add event listeners to dynamically calculate yield and relative yield
-    poundsInput.addEventListener('input', () => {
-        if (poundsInput.value) {
-            tonsInput.value = (poundsInput.value / 2000).toFixed(1);
-        } else {
-            tonsInput.value = '';
-        }
-        calculateYield();
-    });
-
-    tonsInput.addEventListener('input', () => {
-        if (tonsInput.value) {
-            poundsInput.value = (tonsInput.value * 2000).toFixed(0);
-        } else {
-            poundsInput.value = '';
-        }
-        calculateYield();
-    });
-
+    poundsInput.addEventListener('input', () => { updateRelatedField('pounds'); calculateYield(); });
+    tonsInput.addEventListener('input', () => { updateRelatedField('tons'); calculateYield(); });
     kilogramsInput.addEventListener('input', calculateYield);
     measuredDensityEnglish.addEventListener('input', calculateYield);
     measuredDensitySI.addEventListener('input', calculateYield);
-
-    // Dynamic conversion between cubic feet and cubic yards
-    designedVolumeFtInput.addEventListener('input', () => {
-        if (designedVolumeFtInput.value) {
-            designedVolumeYdInput.value = (designedVolumeFtInput.value / 27).toFixed(2);
-        } else {
-            designedVolumeYdInput.value = '';
-        }
-        calculateYield();
-    });
-
-    designedVolumeYdInput.addEventListener('input', () => {
-        if (designedVolumeYdInput.value) {
-            designedVolumeFtInput.value = (designedVolumeYdInput.value * 27).toFixed(2);
-        } else {
-            designedVolumeFtInput.value = '';
-        }
-        calculateYield();
-    });
-
+    designedVolumeFtInput.addEventListener('input', () => { updateRelatedField('designedVolumeFt'); calculateYield(); });
+    designedVolumeYdInput.addEventListener('input', () => { updateRelatedField('designedVolumeYd'); calculateYield(); });
     designedVolumeM3Input.addEventListener('input', calculateYield);
 
     function calculateYield() {
-        // Get the selected unit system
         const unitSystem = document.querySelector('input[name="unit"]:checked').value;
 
         if (unitSystem === "English") {
-            // Calculate for English system
             const pounds = parseFloat(poundsInput.value);
             const measuredDensity = parseFloat(measuredDensityEnglish.value);
             const designedVolumeFt = parseFloat(designedVolumeFtInput.value);
             const designedVolumeYd = parseFloat(designedVolumeYdInput.value);
 
-            // Check if inputs are valid
             if (isNaN(pounds) || isNaN(measuredDensity) || measuredDensity <= 0) {
                 yieldEnglish.value = "Enter valid values";
                 relativeYieldEnglish.value = "";
@@ -328,44 +385,37 @@
                 return;
             }
 
-            // Calculate yield in ft³
             const yield = pounds / measuredDensity;
-            const yieldInCubicYards = yield / 27; // Convert ft³ to yd³
+            const yieldInCubicYards = yield / 27;
             yieldEnglish.value = yield.toFixed(2);
             document.querySelector('#yieldEnglish + span').innerText = `ft³ or ${yieldInCubicYards.toFixed(2)} yd³`;
 
-            // Calculate relative yield
             let relativeYield = "";
             if (!isNaN(designedVolumeFt) && designedVolumeFt > 0) {
                 relativeYield = (yield / designedVolumeFt).toFixed(2);
             }
             relativeYieldEnglish.value = relativeYield;
 
-            // Calculate actual volume / design volume
             let actualOverDesignVolume = "";
             if (!isNaN(designedVolumeYd) && designedVolumeYd > 0) {
                 actualOverDesignVolume = (yield / designedVolumeYd).toFixed(2);
             }
             actualOverDesignVolumeEnglish.value = actualOverDesignVolume;
         } else {
-            // Calculate for SI system
             const kilograms = parseFloat(kilogramsInput.value);
             const measuredDensity = parseFloat(measuredDensitySI.value);
             const designedVolumeM3 = parseFloat(designedVolumeM3Input.value);
 
-            // Check if inputs are valid
             if (isNaN(kilograms) || isNaN(measuredDensity) || measuredDensity <= 0) {
                 yieldSI.value = "Enter valid values";
                 relativeYieldSI.value = "";
                 return;
             }
 
-            // Calculate yield in m³
             const yield = kilograms / measuredDensity;
             yieldSI.value = yield.toFixed(2);
             document.querySelector('#yieldSI + span').innerText = "m³";
 
-            // Calculate relative yield
             let relativeYield = "";
             if (!isNaN(designedVolumeM3) && designedVolumeM3 > 0) {
                 relativeYield = (yield / designedVolumeM3).toFixed(2);
@@ -374,7 +424,6 @@
         }
     }
 
-    // Reset function for English system
     function resetEnglishFields() {
         poundsInput.value = "";
         tonsInput.value = "";
@@ -385,9 +434,9 @@
         relativeYieldEnglish.value = "";
         actualOverDesignVolumeEnglish.value = "";
         document.querySelector('#yieldEnglish + span').innerText = "ft³";
+        activeInput = null;
     }
 
-    // Reset function for SI system
     function resetSIFields() {
         kilogramsInput.value = "";
         measuredDensitySI.value = "";
@@ -395,6 +444,7 @@
         yieldSI.value = "";
         relativeYieldSI.value = "";
         document.querySelector('#yieldSI + span').innerText = "m³";
+        activeInput = null;
     }
 </script>
 

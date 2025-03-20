@@ -26,11 +26,11 @@
         }
         .inline-group {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
         }
         .inline-group input {
-            flex: 1; /* Default behavior for other inputs */
+            flex: 1;
         }
         .radio-group {
             margin-bottom: 15px;
@@ -39,7 +39,7 @@
             align-items: center;
         }
         .radio-group label {
-            font-size: 0.85em; /* Smaller font size */
+            font-size: 0.85em;
             margin-right: 10px;
         }
         .button-group {
@@ -52,18 +52,37 @@
         .read-only-label {
             color: red;
             font-size: 0.9em;
-            margin-left: 5px;
+            display: block;
+            margin-top: 2px;
         }
         #thickness {
-            width: 120px; /* Fixed width for Thickness input */
-            flex: none; /* Prevent flex from resizing the input */
+            width: 120px;
+            flex: none;
         }
         #thickness-fraction {
             font-weight: bold;
             color: #333;
-            white-space: nowrap; /* Prevent wrapping */
-            margin-left: 10px; /* Spacing between input and fractional display */
-            display: none; /* Initially hidden */
+            white-space: nowrap;
+            margin-left: 10px;
+            display: none;
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
+            max-width: 300px;
+            margin: 15px 0;
+        }
+        .key {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        .key:hover {
+            background-color: #e0e0e0;
         }
     </style>
 </head>
@@ -90,13 +109,15 @@
         <!-- Specific Gravity Input -->
         <div class="input-group">
             <label for="specific-gravity">Assumed Specific Gravity:</label>
-            <input type="number" id="specific-gravity" step="0.01" value="2.67">
+            <input type="text" id="specific-gravity" value="2.67" onfocus="setActiveInput(this)">
+            <span id="specific-gravity-read-only" class="read-only-label"></span>
         </div>
 
         <!-- Relative Compaction Input -->
         <div class="input-group">
             <label for="relative-compaction">Assumed Relative Compaction (%):</label>
-            <input type="number" id="relative-compaction" step="0.1" value="94.5">
+            <input type="text" id="relative-compaction" value="94.5" onfocus="setActiveInput(this)">
+            <span id="relative-compaction-read-only" class="read-only-label"></span>
         </div>
 
         <!-- Solve For Radio Buttons -->
@@ -119,17 +140,17 @@
         <div class="inline-group">
             <div class="input-group">
                 <label for="tonnage">Tonnage:</label>
-                <input type="number" id="tonnage" step="1">
+                <input type="text" id="tonnage" onfocus="setActiveInput(this)">
                 <span id="tonnage-read-only" class="read-only-label"></span>
             </div>
             <div class="input-group">
                 <label for="volume">Volume (cubic feet):</label>
-                <input type="number" id="volume" step="0.01" readonly>
+                <input type="text" id="volume" readonly>
                 <span class="read-only-label">Read Only</span>
             </div>
             <div class="input-group">
                 <label for="volume-cubic-yard">Volume (cubic yard):</label>
-                <input type="number" id="volume-cubic-yard" step="0.01" readonly>
+                <input type="text" id="volume-cubic-yard" readonly>
                 <span class="read-only-label">Read Only</span>
             </div>
         </div>
@@ -138,8 +159,8 @@
         <div class="input-group">
             <label for="thickness">Thickness (inches):</label>
             <div class="inline-group">
-                <input type="number" id="thickness" step="0.125">
-                <span id="thickness-fraction" class="read-only-label"></span> <!-- Fractional display -->
+                <input type="text" id="thickness" onfocus="setActiveInput(this)">
+                <span id="thickness-fraction" class="read-only-label"></span>
             </div>
             <span id="thickness-read-only" class="read-only-label"></span>
         </div>
@@ -148,12 +169,12 @@
         <div class="inline-group">
             <div class="input-group">
                 <label for="area-sqft">Area (square feet):</label>
-                <input type="number" id="area-sqft" step="0.01" readonly>
+                <input type="text" id="area-sqft" readonly>
                 <span class="read-only-label">Read Only</span>
             </div>
             <div class="input-group">
                 <label for="area-sqyd">Area (square yard):</label>
-                <input type="number" id="area-sqyd" step="0.01" readonly>
+                <input type="text" id="area-sqyd" readonly>
                 <span class="read-only-label">Read Only</span>
             </div>
         </div>
@@ -162,14 +183,30 @@
         <div class="inline-group">
             <div class="input-group">
                 <label for="width">Average Width (feet):</label>
-                <input type="number" id="width" step="0.5" value="11">
+                <input type="text" id="width" value="11" onfocus="setActiveInput(this)">
                 <span id="width-read-only" class="read-only-label"></span>
             </div>
             <div class="input-group">
                 <label for="length">Length (feet):</label>
-                <input type="number" id="length" step="20">
+                <input type="text" id="length" onfocus="setActiveInput(this)">
                 <span id="length-read-only" class="read-only-label"></span>
             </div>
+        </div>
+
+        <!-- Keypad -->
+        <div class="keypad">
+            <div class="key" onclick="addNumber('1')">1</div>
+            <div class="key" onclick="addNumber('2')">2</div>
+            <div class="key" onclick="addNumber('3')">3</div>
+            <div class="key" onclick="addNumber('4')">4</div>
+            <div class="key" onclick="addNumber('5')">5</div>
+            <div class="key" onclick="addNumber('6')">6</div>
+            <div class="key" onclick="addNumber('7')">7</div>
+            <div class="key" onclick="addNumber('8')">8</div>
+            <div class="key" onclick="addNumber('9')">9</div>
+            <div class="key" onclick="addNumber('0')">0</div>
+            <div class="key" onclick="addNumber('.')">.</div>
+            <div class="key" onclick="addNumber('C')">C</div>
         </div>
 
         <!-- Reset Button -->
@@ -179,6 +216,46 @@
     </div>
 
     <script>
+        // Keypad Variables
+        let activeInput = null;
+        let lastInput = null;
+        let userInputs = new Set();
+
+        function setActiveInput(input) {
+            if (!input.readOnly) {
+                activeInput = input;
+                lastInput = input;
+            } else {
+                activeInput = null;
+            }
+        }
+
+        function addNumber(num) {
+            if (activeInput && !activeInput.readOnly) {
+                if (num === 'C') {
+                    clearLastInput();
+                    return;
+                }
+                let currentValue = activeInput.value || '';
+                if (num === '.' && currentValue.includes('.')) {
+                    return;
+                }
+                activeInput.value = currentValue + num;
+                lastInput = activeInput;
+                userInputs.add(activeInput);
+                activeInput.dispatchEvent(new Event('input'));
+            }
+        }
+
+        function clearLastInput() {
+            if (lastInput && !lastInput.readOnly) {
+                lastInput.value = '';
+                userInputs.delete(lastInput);
+                lastInput.focus();
+                calculate();
+            }
+        }
+
         // Function to convert decimal inches to fractional format
         function decimalToFraction(decimal) {
             const fractions = [
@@ -191,11 +268,9 @@
                 { decimal: 0.875, fraction: '7/8' }
             ];
 
-            // Separate the whole number and the decimal part
             const wholeNumber = Math.floor(decimal);
             const decimalPart = decimal - wholeNumber;
 
-            // Find the closest matching fraction
             let closestFraction = '';
             let smallestDifference = Infinity;
 
@@ -207,17 +282,12 @@
                 }
             });
 
-            // If the decimal part is very small, consider it as 0
-            if (decimalPart < 0.01) {
+            if (decimalPart < 0.0625) { // Adjusted tolerance for cleaner rounding
                 return `${wholeNumber}"`;
             }
-
-            // If the whole number is 0, return only the fraction
             if (wholeNumber === 0) {
                 return `${closestFraction}"`;
             }
-
-            // Return the whole number and fraction
             return `${wholeNumber} ${closestFraction}"`;
         }
 
@@ -225,11 +295,11 @@
         document.querySelectorAll('input[name="mix"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'other') {
-                    document.getElementById('specific-gravity').value = '2.5'; // Default for "Other"
+                    document.getElementById('specific-gravity').value = '2.5';
                 } else {
                     document.getElementById('specific-gravity').value = this.value;
                 }
-                calculate(); // Recalculate on mix change
+                calculate();
             });
         });
 
@@ -237,7 +307,7 @@
         function resetFieldsOnSolveForChange() {
             document.getElementById('tonnage').value = '';
             document.getElementById('thickness').value = '';
-            document.getElementById('width').value = '11'; // Reset width to default
+            document.getElementById('width').value = '11';
             document.getElementById('length').value = '';
             document.getElementById('area-sqft').value = '';
             document.getElementById('area-sqyd').value = '';
@@ -249,17 +319,19 @@
         function updateReadOnlyFields() {
             const solveFor = document.querySelector('input[name="solve-for"]:checked').value;
 
-            // Reset all fields to editable and hide "Read Only" labels
             document.getElementById('tonnage').readOnly = false;
             document.getElementById('thickness').readOnly = false;
             document.getElementById('width').readOnly = false;
             document.getElementById('length').readOnly = false;
+            document.getElementById('specific-gravity').readOnly = false;
+            document.getElementById('relative-compaction').readOnly = false;
             document.getElementById('tonnage-read-only').textContent = '';
             document.getElementById('thickness-read-only').textContent = '';
             document.getElementById('width-read-only').textContent = '';
             document.getElementById('length-read-only').textContent = '';
+            document.getElementById('specific-gravity-read-only').textContent = '';
+            document.getElementById('relative-compaction-read-only').textContent = '';
 
-            // Set the selected field to read-only and show "Read Only" label
             if (solveFor === 'tonnage') {
                 document.getElementById('tonnage').readOnly = true;
                 document.getElementById('tonnage-read-only').textContent = 'Read Only';
@@ -278,9 +350,9 @@
         // Update read-only fields and reset values when solve-for selection changes
         document.querySelectorAll('input[name="solve-for"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                resetFieldsOnSolveForChange(); // Reset fields
-                updateReadOnlyFields(); // Update read-only fields
-                calculate(); // Recalculate on solve-for change
+                resetFieldsOnSolveForChange();
+                updateReadOnlyFields();
+                calculate();
             });
         });
 
@@ -301,72 +373,69 @@
             const width = parseFloat(document.getElementById('width').value);
             const length = parseFloat(document.getElementById('length').value);
 
-            // Determine what to solve for
             const solveFor = document.querySelector('input[name="solve-for"]:checked').value;
 
             let areaSqft, volume;
 
             if (solveFor === 'width' || solveFor === 'length') {
-                // Calculate area based on tonnage and thickness
-                if (!isNaN(tonnage) && !isNaN(thickness)) {
+                if (!isNaN(tonnage) && !isNaN(thickness) && !isNaN(specificGravity) && !isNaN(relativeCompaction)) {
                     areaSqft = (tonnage * 2000) / (specificGravity * 62.4 * relativeCompaction * (thickness / 12));
                 }
             } else {
-                // Calculate area based on width and length
-                areaSqft = width * length;
+                if (!isNaN(width) && !isNaN(length)) {
+                    areaSqft = width * length;
+                }
             }
 
-            // Update area fields
             if (!isNaN(areaSqft)) {
                 document.getElementById('area-sqft').value = areaSqft.toFixed(2);
                 document.getElementById('area-sqyd').value = (areaSqft / 9).toFixed(2);
+            } else {
+                document.getElementById('area-sqft').value = '';
+                document.getElementById('area-sqyd').value = '';
             }
 
-            // Calculate volume based on tonnage, specific gravity, and relative compaction
-            if (!isNaN(tonnage)) {
+            if (!isNaN(tonnage) && !isNaN(specificGravity) && !isNaN(relativeCompaction)) {
                 volume = (tonnage * 2000) / (specificGravity * 62.4 * relativeCompaction);
                 document.getElementById('volume').value = volume.toFixed(2);
-                // Convert volume to cubic yards
-                const volumeCubicYard = volume / 27;
-                document.getElementById('volume-cubic-yard').value = volumeCubicYard.toFixed(2);
+                document.getElementById('volume-cubic-yard').value = (volume / 27).toFixed(2);
+            } else {
+                document.getElementById('volume').value = '';
+                document.getElementById('volume-cubic-yard').value = '';
             }
 
-            // Solve for the selected field
             if (solveFor === 'tonnage') {
-                // Solve for Tonnage
-                if (!isNaN(thickness) && !isNaN(width) && !isNaN(length)) {
+                if (!isNaN(thickness) && !isNaN(width) && !isNaN(length) && !isNaN(specificGravity) && !isNaN(relativeCompaction)) {
                     const calculatedTonnage = (specificGravity * 62.4 * relativeCompaction * (thickness / 12) * width * length) / 2000;
                     document.getElementById('tonnage').value = calculatedTonnage.toFixed(2);
                 }
             } else if (solveFor === 'thickness') {
-                // Solve for Thickness
-                if (!isNaN(tonnage) && !isNaN(width) && !isNaN(length)) {
+                if (!isNaN(tonnage) && !isNaN(width) && !isNaN(length) && !isNaN(specificGravity) && !isNaN(relativeCompaction)) {
                     const calculatedThickness = ((tonnage * 2000) / (specificGravity * 62.4 * relativeCompaction * width * length)) * 12;
                     document.getElementById('thickness').value = calculatedThickness.toFixed(2);
                 }
             } else if (solveFor === 'width') {
-                // Solve for Width
                 if (!isNaN(areaSqft) && !isNaN(length)) {
                     const calculatedWidth = areaSqft / length;
                     document.getElementById('width').value = calculatedWidth.toFixed(2);
                 }
             } else if (solveFor === 'length') {
-                // Solve for Length
                 if (!isNaN(areaSqft) && !isNaN(width)) {
                     const calculatedLength = areaSqft / width;
                     document.getElementById('length').value = calculatedLength.toFixed(2);
                 }
             }
 
-            // Update fractional thickness display
             const thicknessFraction = document.getElementById('thickness-fraction');
-            if (!isNaN(thickness) && thickness !== 0) {
-                const fractionalThickness = decimalToFraction(thickness);
+            const thicknessInput = document.getElementById('thickness');
+            const thicknessValue = parseFloat(thicknessInput.value);
+            if (!isNaN(thicknessValue) && thicknessValue !== 0 && thicknessInput.readOnly) {
+                const fractionalThickness = decimalToFraction(thicknessValue);
                 thicknessFraction.textContent = fractionalThickness;
-                thicknessFraction.style.display = 'inline'; // Show the fractional display
+                thicknessFraction.style.display = 'inline';
             } else {
                 thicknessFraction.textContent = '';
-                thicknessFraction.style.display = 'none'; // Hide the fractional display
+                thicknessFraction.style.display = 'none';
             }
         }
 
@@ -377,13 +446,17 @@
             document.getElementById('area-sqyd').value = '';
             document.getElementById('volume').value = '';
             document.getElementById('volume-cubic-yard').value = '';
-            document.getElementById('width').value = '11'; // Reset width to default
+            document.getElementById('width').value = '11';
             document.getElementById('length').value = '';
+            document.getElementById('specific-gravity').value = '2.67';
+            document.getElementById('relative-compaction').value = '94.5';
+            userInputs.clear();
+            lastInput = null;
+            activeInput = null;
 
-            // Reset the fractional display
             const thicknessFraction = document.getElementById('thickness-fraction');
             thicknessFraction.textContent = '';
-            thicknessFraction.style.display = 'none'; // Hide the fractional display
+            thicknessFraction.style.display = 'none';
         }
     </script>
 </body>

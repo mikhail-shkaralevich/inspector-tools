@@ -18,7 +18,7 @@
             display: block;
             margin-bottom: 5px;
         }
-        input[type="number"] {
+        input[type="text"] { /* Changed to type="text" for keypad compatibility */
             width: 100px;
             padding: 5px;
         }
@@ -40,7 +40,25 @@
             padding: 10px;
             border: 1px solid #ddd;
             display: none;
-            color: green; /* Added to make result text green */
+            color: green;
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
+            max-width: 300px;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        .key {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .key:hover {
+            background-color: #e0e0e0;
         }
     </style>
 </head>
@@ -50,7 +68,7 @@
 
     <div class="input-group">
         <label>Surface Area:</label>
-        <input type="number" id="areaValue" min="0" step="any" oninput="calculate()">
+        <input type="text" id="areaValue" onfocus="setActiveInput(this)" oninput="calculate()">
         <select id="areaUnit" onchange="calculate()">
             <option value="sq ft">sq ft</option>
             <option value="sq yd">sq yd</option>
@@ -59,7 +77,7 @@
 
     <div class="input-group">
         <label>Depth:</label>
-        <input type="number" id="depthValue" min="0" step="any" oninput="calculate()">
+        <input type="text" id="depthValue" onfocus="setActiveInput(this)" oninput="calculate()">
         <select id="depthUnit" onchange="calculate()">
             <option value="ft">ft</option>
             <option value="in">in</option>
@@ -68,11 +86,26 @@
 
     <div class="input-group">
         <label>Volume:</label>
-        <input type="number" id="volumeValue" min="0" step="any" oninput="calculate()">
+        <input type="text" id="volumeValue" onfocus="setActiveInput(this)" oninput="calculate()">
         <select id="volumeUnit" onchange="calculate()">
             <option value="cu ft">cu ft</option>
             <option value="cu yd">cu yd</option>
         </select>
+    </div>
+
+    <div class="keypad">
+        <div class="key" onclick="addNumber('1')">1</div>
+        <div class="key" onclick="addNumber('2')">2</div>
+        <div class="key" onclick="addNumber('3')">3</div>
+        <div class="key" onclick="addNumber('4')">4</div>
+        <div class="key" onclick="addNumber('5')">5</div>
+        <div class="key" onclick="addNumber('6')">6</div>
+        <div class="key" onclick="addNumber('7')">7</div>
+        <div class="key" onclick="addNumber('8')">8</div>
+        <div class="key" onclick="addNumber('9')">9</div>
+        <div class="key" onclick="addNumber('0')">0</div>
+        <div class="key" onclick="addNumber('.')">.</div>
+        <div class="key" onclick="clearInput()">C</div>
     </div>
 
     <button onclick="reset()">Reset</button>
@@ -81,9 +114,31 @@
 
     <script>
         let calculatedField = null; // Tracks which field was initially calculated
+        let activeInput = null; // Tracks the currently focused input for keypad
+
+        function setActiveInput(input) {
+            activeInput = input;
+        }
+
+        function addNumber(num) {
+            if (activeInput) {
+                let currentValue = activeInput.value || '';
+                if (num === '.' && currentValue.includes('.')) {
+                    return; // Prevent multiple decimal points
+                }
+                activeInput.value = currentValue + num;
+                calculate(); // Trigger calculation after keypad input
+            }
+        }
+
+        function clearInput() {
+            if (activeInput) {
+                activeInput.value = '';
+                calculate(); // Recalculate after clearing
+            }
+        }
 
         function calculate() {
-            // Get input values and units
             const areaValue = parseFloat(document.getElementById('areaValue').value) || null;
             const areaUnit = document.getElementById('areaUnit').value;
             const depthValue = parseFloat(document.getElementById('depthValue').value) || null;
@@ -91,7 +146,6 @@
             const volumeValue = parseFloat(document.getElementById('volumeValue').value) || null;
             const volumeUnit = document.getElementById('volumeUnit').value;
 
-            // Count non-null inputs
             const inputs = [
                 areaValue !== null,
                 depthValue !== null,
@@ -100,13 +154,11 @@
 
             const resultDiv = document.getElementById('result');
 
-            // Reset if fewer than 2 inputs
             if (inputs < 2) {
                 resultDiv.style.display = 'none';
                 return;
             }
 
-            // Convert to base units (ft², ft, ft³)
             let areaFt2 = areaValue;
             if (areaValue && areaUnit === 'sq yd') areaFt2 *= 9;
 
@@ -118,7 +170,6 @@
 
             let result = '';
 
-            // Initial calculation: determine which field to calculate
             if (inputs === 2 && calculatedField === null) {
                 if (!areaValue) {
                     calculatedField = 'area';
@@ -143,12 +194,9 @@
                     result = `Calculated Volume:<br>
                              ${volumeFt3.toFixed(2)} cubic feet<br>
                              ${volumeYd3.toFixed(2)} cubic yards`;
-                    const volumeInput = document.getElementById('volumeValue');
-                    volumeInput.value = volumeUnit === 'cu ft' ? volumeFt3.toFixed(2) : volumeYd3.toFixed(2);
+                    document.getElementById('volumeValue').value = volumeUnit === 'cu ft' ? volumeFt3.toFixed(2) : volumeYd3.toFixed(2);
                 }
-            } 
-            // Recalculate the originally calculated field when inputs change
-            else if (inputs >= 2 && calculatedField) {
+            } else if (inputs >= 2 && calculatedField) {
                 if (calculatedField === 'area') {
                     areaFt2 = volumeFt3 / depthFt;
                     const areaYd2 = areaFt2 / 9;
@@ -169,8 +217,7 @@
                     result = `Calculated Volume:<br>
                              ${volumeFt3.toFixed(2)} cubic feet<br>
                              ${volumeYd3.toFixed(2)} cubic yards`;
-                    const volumeInput = document.getElementById('volumeValue');
-                    volumeInput.value = volumeUnit === 'cu ft' ? volumeFt3.toFixed(2) : volumeYd3.toFixed(2);
+                    document.getElementById('volumeValue').value = volumeUnit === 'cu ft' ? volumeFt3.toFixed(2) : volumeYd3.toFixed(2);
                 }
             }
 
@@ -184,6 +231,7 @@
             document.getElementById('volumeValue').value = '';
             document.getElementById('result').style.display = 'none';
             calculatedField = null;
+            activeInput = null;
         }
     </script>
 </body>

@@ -20,12 +20,13 @@
         }
 
         .converter select,
-        .converter input[type="number"] {
+        .converter input[type="text"] { /* Changed to type="text" */
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            box-sizing: border-box;
         }
 
         .converter button {
@@ -37,37 +38,38 @@
             margin-right: 10px;
         }
 
-        /* Convert button - Blue */
-        .converter button.convert {
-            background-color: #007bff; /* Blue */
-        }
-
-        .converter button.convert:hover {
-            background-color: #0056b3; /* Darker blue on hover */
-        }
-
-        /* Swap button - Violet */
-        .converter button.swap {
-            background-color: #8a2be2; /* Violet */
-        }
-
-        .converter button.swap:hover {
-            background-color: #7b1fa2; /* Darker violet on hover */
-        }
-
-        /* Reset button - Red */
-        .converter button.reset {
-            background-color: #ff0000; /* Red */
-        }
-
-        .converter button.reset:hover {
-            background-color: #cc0000; /* Darker red on hover */
-        }
+        .converter button.convert { background-color: #007bff; }
+        .converter button.convert:hover { background-color: #0056b3; }
+        .converter button.swap { background-color: #8a2be2; }
+        .converter button.swap:hover { background-color: #7b1fa2; }
+        .converter button.reset { background-color: #ff0000; }
+        .converter button.reset:hover { background-color: #cc0000; }
 
         .result {
             margin-top: 20px;
             font-size: 18px;
             font-weight: bold;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
+            max-width: 300px;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        
+        .key {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .key:hover {
+            background-color: #e0e0e0;
         }
     </style>
 </head>
@@ -75,46 +77,45 @@
     <h2>Unit Conversions</h2>
     <p>Convert measurements for Mass, Volume, Density, Distance, or Speed.</p>
     <div class="converter">
-        <!-- Radio Buttons for Measurement Type -->
         <label>Measurement Type:</label>
-        <label>
-            <input type="radio" name="measurement-type" value="mass" checked> Mass
-        </label>
-        <label>
-            <input type="radio" name="measurement-type" value="volume"> Volume
-        </label>
-        <label>
-            <input type="radio" name="measurement-type" value="density"> Density
-        </label>
-        <label>
-            <input type="radio" name="measurement-type" value="distance"> Distance
-        </label>
-        <label>
-            <input type="radio" name="measurement-type" value="speed"> Speed
-        </label>
+        <label><input type="radio" name="measurement-type" value="mass" checked> Mass</label>
+        <label><input type="radio" name="measurement-type" value="volume"> Volume</label>
+        <label><input type="radio" name="measurement-type" value="density"> Density</label>
+        <label><input type="radio" name="measurement-type" value="distance"> Distance</label>
+        <label><input type="radio" name="measurement-type" value="speed"> Speed</label>
 
-        <!-- From Unit and To Unit Dropdowns -->
         <label for="from-unit">From Unit:</label>
         <select id="from-unit"></select>
 
         <label for="to-unit">To Unit:</label>
         <select id="to-unit"></select>
 
-        <!-- Input Value -->
         <label for="input-value">Input Value:</label>
-        <input type="number" id="input-value" placeholder="Enter value">
+        <input type="text" id="input-value" placeholder="Enter value" onfocus="setActiveInput(this)">
 
-        <!-- Buttons -->
+        <div class="keypad">
+            <div class="key" onclick="addNumber('1')">1</div>
+            <div class="key" onclick="addNumber('2')">2</div>
+            <div class="key" onclick="addNumber('3')">3</div>
+            <div class="key" onclick="addNumber('4')">4</div>
+            <div class="key" onclick="addNumber('5')">5</div>
+            <div class="key" onclick="addNumber('6')">6</div>
+            <div class="key" onclick="addNumber('7')">7</div>
+            <div class="key" onclick="addNumber('8')">8</div>
+            <div class="key" onclick="addNumber('9')">9</div>
+            <div class="key" onclick="addNumber('0')">0</div>
+            <div class="key" onclick="addNumber('.')">.</div>
+            <div class="key" onclick="clearInput()">C</div>
+        </div>
+
         <button onclick="convertUnits()" class="convert">Convert</button>
         <button onclick="swapUnits()" class="swap">Swap Units</button>
         <button onclick="resetInput()" class="reset">Reset</button>
 
-        <!-- Result Display -->
         <div class="result" id="result"></div>
     </div>
 
     <script>
-        // Unit Conversion Data
         const units = {
             mass: [
                 { name: "Kilograms (kg)", factor: 1 },
@@ -150,7 +151,6 @@
             ]
         };
 
-        // Default units for each measurement type
         const defaultUnits = {
             mass: { from: "Pounds (lb)", to: "Grams (g)" },
             volume: { from: "Cubic Yards (yd³)", to: "Cubic Feet (ft³)" },
@@ -159,68 +159,82 @@
             speed: { from: "Meters per Second (m/s)", to: "Kilometers per Hour (km/h)" }
         };
 
-        // Get DOM elements
         const measurementTypeRadios = document.querySelectorAll('input[name="measurement-type"]');
         const fromUnit = document.getElementById("from-unit");
         const toUnit = document.getElementById("to-unit");
         const inputValue = document.getElementById("input-value");
         const result = document.getElementById("result");
 
-        // Function to populate units based on selected measurement type
+        let activeInput = null;
+
+        function setActiveInput(input) {
+            activeInput = input;
+        }
+
+        function addNumber(num) {
+            if (activeInput) {
+                let currentValue = activeInput.value || '';
+                if (num === '.' && currentValue.includes('.')) {
+                    return; // Prevent multiple decimal points
+                }
+                activeInput.value = currentValue + num;
+            }
+        }
+
+        function clearInput() {
+            if (activeInput) {
+                activeInput.value = '';
+                result.innerText = '';
+            }
+        }
+
         function populateUnits() {
             const selectedType = document.querySelector('input[name="measurement-type"]:checked').value;
             const unitList = units[selectedType];
-
-            // Reset input value
             inputValue.value = "";
-
-            // Populate From Unit dropdown
             fromUnit.innerHTML = unitList.map(unit => `<option value="${unit.factor}" ${unit.name === defaultUnits[selectedType].from ? "selected" : ""}>${unit.name}</option>`).join("");
-
-            // Populate To Unit dropdown
             toUnit.innerHTML = unitList.map(unit => `<option value="${unit.factor}" ${unit.name === defaultUnits[selectedType].to ? "selected" : ""}>${unit.name}</option>`).join("");
         }
 
-        // Add event listeners to radio buttons
         measurementTypeRadios.forEach(radio => {
-            radio.addEventListener("change", populateUnits);
+            radio.addEventListener("change", () => {
+                populateUnits();
+                result.innerText = ''; // Clear result when changing measurement type
+            });
         });
 
-        // Populate units on page load
         populateUnits();
 
-        // Conversion function
         function convertUnits() {
             const inputValueNum = parseFloat(inputValue.value);
             const fromFactor = parseFloat(fromUnit.value);
             const toFactor = parseFloat(toUnit.value);
-            const toUnitName = toUnit.options[toUnit.selectedIndex].text; // Get the selected "To Unit" name
+            const toUnitName = toUnit.options[toUnit.selectedIndex].text;
 
             if (isNaN(inputValueNum)) {
                 result.innerText = "Please enter a valid number.";
-                result.style.color = "red"; // Highlight error message in red
+                result.style.color = "red";
                 return;
             }
 
             const convertedValue = (inputValueNum / fromFactor) * toFactor;
-            result.innerText = `Result: ${convertedValue.toFixed(4)} ${toUnitName}`; // Include unit name
-            result.style.color = "green"; // Set result text color to green
+            result.innerText = `Result: ${convertedValue.toFixed(4)} ${toUnitName}`;
+            result.style.color = "green";
         }
 
-        // Reset function
         function resetInput() {
-            inputValue.value = ""; // Clear the input field
-            result.innerText = ""; // Clear the result display
+            inputValue.value = "";
+            result.innerText = "";
         }
 
-        // Swap units function
         function swapUnits() {
-            const fromIndex = fromUnit.selectedIndex; // Get the selected index of "From Unit"
-            const toIndex = toUnit.selectedIndex; // Get the selected index of "To Unit"
-
-            // Swap the selected indices
+            const fromIndex = fromUnit.selectedIndex;
+            const toIndex = toUnit.selectedIndex;
             fromUnit.selectedIndex = toIndex;
             toUnit.selectedIndex = fromIndex;
+            if (inputValue.value) {
+                convertUnits(); // Update result if there's a value
+            }
         }
     </script>
 </body>
