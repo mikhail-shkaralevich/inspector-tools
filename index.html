@@ -10,52 +10,62 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar Styles */
-        .sidebar {
-            width: 125px; /* Reduced from 250px to half */
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .dropdown-btn {
             background-color: #2c3e50;
             color: white;
-            padding: 10px; /* Reduced from 20px */
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 0 0 5px 0;
         }
 
-        .sidebar h2 {
-            text-align: center;
-            margin-bottom: 15px; /* Slightly reduced from 20px */
-            font-size: 16px; /* Reduced header size for better fit */
-        }
-
-        .sidebar ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .sidebar ul li {
-            margin: 10px 0; /* Reduced from 15px */
-        }
-
-        .sidebar ul li a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px; /* Reduced from 18px */
-            display: block;
-            padding: 5px; /* Reduced from 10px */
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .sidebar ul li a:hover {
+        .dropdown-btn:hover {
             background-color: #34495e;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #2c3e50;
+            min-width: 200px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 5px 5px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dropdown-content a {
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #34495e;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
 
         /* Main Content Styles */
         .main-content {
-            flex: 1;
             background-color: #ecf0f1;
+            height: 100vh;
         }
 
         iframe {
@@ -66,23 +76,23 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>Inspector Tools</h2>
-        <ul>
-            <li><a href="#" onclick="loadModule('modules/unit-conversion.html')">Unit Conversions</a></li>
-            <li><a href="#" onclick="loadModule('modules/density-mass-volume-calculator.html')">Density, Mass, Volume Calculator</a></li>
-            <li><a href="#" onclick="loadModule('modules/grade-slope-taper.html')">Grade, Slope or Taper</a></li>
-            <li><a href="#" onclick="loadModule('modules/excavation.html')">Excavation Calculator</a></li>
-            <li><a href="#" onclick="loadModule('modules/asphalt-pavement-calculator.html')">Asphalt Pavement Calculator</a></li>
-            <li><a href="#" onclick="loadModule('modules/concrete-yield-calculator.html')">Concrete Yield Calculator</a></li>
-            <li><a href="#" onclick="loadModule('modules/sand-cone-test.html')">Sand Cone Test</a></li>
-            <li><a href="#" onclick="loadModule('modules/sieve-analysis.html')">Sieve Analysis</a></li>
-            <li><a href="#" onclick="loadModule('modules/DMS to Decimal Degrees Converter.html')">GPS Coordinates Converter</a></li>
-            <li><a href="#" onclick="loadModule('modules/module10.html')">Module 9</a></li>
-            <li><a href="#" onclick="loadModule('modules/module11.html')">Module 10</a></li>
-            <li><a href="#" onclick="loadModule('modules/FSTQP.html')">Certification Practice Questions</a></li>
-        </ul>
+    <!-- Dropdown Menu -->
+    <div class="dropdown">
+        <button class="dropdown-btn">Inspector Tools ▼</button>
+        <div class="dropdown-content">
+            <a href="#" onclick="loadModule('modules/unit-conversion.html')">Unit Conversions</a>
+            <a href="#" onclick="loadModule('modules/density-mass-volume-calculator.html')">Density, Mass, Volume Calculator</a>
+            <a href="#" onclick="loadModule('modules/grade-slope-taper.html')">Grade, Slope or Taper</a>
+            <a href="#" onclick="loadModule('modules/excavation.html')">Excavation Calculator</a>
+            <a href="#" onclick="loadModule('modules/asphalt-pavement-calculator.html')">Asphalt Pavement Calculator</a>
+            <a href="#" onclick="loadModule('modules/concrete-yield-calculator.html')">Concrete Yield Calculator</a>
+            <a href="#" onclick="loadModule('modules/sand-cone-test.html')">Sand Cone Test</a>
+            <a href="#" onclick="loadModule('modules/sieve-analysis.html')">Sieve Analysis</a>
+            <a href="#" onclick="loadModule('modules/DMS to Decimal Degrees Converter.html')">GPS Coordinates Converter</a>
+            <a href="#" onclick="loadModule('modules/module10.html')">Module 9</a>
+            <a href="#" onclick="loadModule('modules/module11.html')">Module 10</a>
+            <a href="#" onclick="loadModule('modules/FSTQP.html')">Certification Practice Questions</a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -94,6 +104,8 @@
         // Function to load a module into the iframe
         function loadModule(moduleUrl) {
             document.getElementById("module-frame").src = moduleUrl;
+            // Optional: Hide dropdown after selection (uncomment if desired)
+            // document.querySelector('.dropdown-content').style.display = 'none';
         }
     </script>
 </body>
