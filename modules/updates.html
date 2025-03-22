@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .menu-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .paypal-button-container {
+            margin-top: 20px;
+        }
+        
+        .feedback-form {
+            margin-top: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            max-width: 400px;
+            height: 100px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h2>Future Updates & Support</h2>
+        <p>This inspector toolbox is a work in progress, developed during my available hours as a senior Computer Science student. I plan to improve and expand its features over time. Your feedback and suggestions are always welcome!</p>
+        <p>If you find this tool helpful and would like to support future development, I sincerely appreciate any donations. Thank you!</p>
+        
+        <!-- PayPal Button -->
+        <div class="paypal-button-container">
+            <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=USD&enable-funding=venmo"></script>
+            <div id="paypal-button-container"></div>
+            <script>
+                paypal.Buttons({
+                    createOrder: function(data, actions) {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: '5.00' // Change this amount as needed
+                                }
+                            }]
+                        });
+                    },
+                    onApprove: function(data, actions) {
+                        return actions.order.capture().then(function(details) {
+                            alert('Thank you for your donation, ' + details.payer.name.given_name + '!');
+                        });
+                    }
+                }).render('#paypal-button-container');
+            </script>
+        </div>
+        
+        <!-- Feedback Form -->
+        <div class="feedback-form">
+            <form action="mailto:mkaralevich@gmail.com" method="post" enctype="text/plain">
+                <h3>Send Feedback</h3>
+                <textarea name="feedback" placeholder="Enter your feedback or suggestions here..." required></textarea>
+                <br>
+                <button type="submit">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
