@@ -6,24 +6,21 @@
     <title>Unit Conversions</title>
     <style>
         body {
-            margin-top: 40px; /* Added top margin to the body */
+            margin-top: 40px;
         }
         .converter {
             margin: 20px;
         }
-
         .converter label {
             display: block;
             margin: 10px 0 5px;
             font-weight: bold;
         }
-
         .converter input[type="radio"] {
             margin-right: 10px;
         }
-
         .converter select,
-        .converter input[type="text"] { /* Changed to type="text" */
+        .converter input[type="text"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -31,7 +28,6 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
-
         .converter button {
             padding: 10px 20px;
             color: white;
@@ -40,20 +36,17 @@
             cursor: pointer;
             margin-right: 10px;
         }
-
         .converter button.convert { background-color: #007bff; }
         .converter button.convert:hover { background-color: #0056b3; }
         .converter button.swap { background-color: #8a2be2; }
         .converter button.swap:hover { background-color: #7b1fa2; }
         .converter button.reset { background-color: #ff0000; }
         .converter button.reset:hover { background-color: #cc0000; }
-
         .result {
             margin-top: 20px;
             font-size: 18px;
             font-weight: bold;
         }
-
         .keypad {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -62,7 +55,6 @@
             margin: 0 0 15px 0;
             text-align: center;
         }
-        
         .key {
             padding: 10px;
             background-color: #f0f0f0;
@@ -70,13 +62,36 @@
             cursor: pointer;
             font-size: 16px;
         }
-        
         .key:hover {
             background-color: #e0e0e0;
+        }
+        .keyboard-controls {
+            position: absolute;
+            top: 0;
+            left: 150px;
+            z-index: 1000;
+        }
+        .keyboard-btn {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+            border-radius: 5px;
+        }
+        .keyboard-btn:hover {
+            background-color: #34495e;
         }
     </style>
 </head>
 <body>
+    <div class="keyboard-controls">
+        <button class="keyboard-btn" onclick="disableKeyboard()">Disable Keyboard</button>
+        <button class="keyboard-btn" onclick="enableKeyboard()">Enable Keyboard</button>
+    </div>
+
     <h2>Unit Conversions</h2>
     <p>Convert measurements for Mass, Volume, Density, Distance, or Speed.</p>
     <div class="converter">
@@ -133,7 +148,7 @@
                 { name: "Cubic Meters (m³)", factor: 0.001 },
                 { name: "Cubic Yards (yd³)", factor: 0.00130795 },
                 { name: "Cubic Feet (ft³)", factor: 0.0353147 },
-                { name: "Cubic Centimeters (cm³)", factor: 1000 } // Added cubic centimeters
+                { name: "Cubic Centimeters (cm³)", factor: 1000 }
             ],
             density: [
                 { name: "Kilograms per Cubic Meter (kg/m³)", factor: 1 },
@@ -170,6 +185,7 @@
         const result = document.getElementById("result");
 
         let activeInput = null;
+        let isKeyboardDisabled = false;
 
         function setActiveInput(input) {
             activeInput = input;
@@ -203,7 +219,7 @@
         measurementTypeRadios.forEach(radio => {
             radio.addEventListener("change", () => {
                 populateUnits();
-                result.innerText = ''; // Clear result when changing measurement type
+                result.innerText = '';
             });
         });
 
@@ -237,9 +253,28 @@
             fromUnit.selectedIndex = toIndex;
             toUnit.selectedIndex = fromIndex;
             if (inputValue.value) {
-                convertUnits(); // Update result if there's a value
+                convertUnits();
             }
         }
+
+        // Keyboard Control Functions
+        function disableKeyboard() {
+            isKeyboardDisabled = true;
+            inputValue.style.backgroundColor = '#e0e0e0'; // Visual feedback
+        }
+
+        function enableKeyboard() {
+            isKeyboardDisabled = false;
+            inputValue.style.backgroundColor = ''; // Reset to default
+            inputValue.focus(); // Optional: Focus on the input
+        }
+
+        // Prevent physical keyboard input when disabled
+        inputValue.addEventListener('keydown', function(event) {
+            if (isKeyboardDisabled) {
+                event.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
