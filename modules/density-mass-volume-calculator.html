@@ -12,7 +12,7 @@
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 0;
         }
         h1 {
             text-align: left;
@@ -35,7 +35,7 @@
             font-size: 0.9em;
             color: #555;
             margin-top: 2px;
-         }
+        }
         .unit-system {
             display: flex;
             justify-content: flex-start;
@@ -47,6 +47,9 @@
             align-items: center;
             gap: 10px;
             margin-top: 20px;
+        }
+        .mass-group span, .volume-group span, .density-group span {
+            font-weight: bold;
         }
         .reset-button button {
             padding: 10px 20px;
@@ -71,6 +74,7 @@
             border: 1px solid #ccc;
             cursor: pointer;
             font-size: 16px;
+            text-align: center;
         }
         .key:hover {
             background-color: #e0e0e0;
@@ -87,7 +91,7 @@
         </div>
 
         <label>Input 2 Parameters (calculated values in green):</label>
-        <div class="density-group">
+        <div class="density-group" id="densityGroup">
             <div>
                 <input type="text" id="densityInput" placeholder="density" onfocus="setActiveInput(this)">
                 <div class="unit" id="densityUnitLabel">Density (lb/ft³)</div>
@@ -99,7 +103,7 @@
             </div>
         </div>
 
-        <div class="mass-group">
+        <div class="mass-group" id="massGroup">
             <div>
                 <input type="text" id="massInput1" placeholder="mass" onfocus="setActiveInput(this)">
                 <div class="unit" id="massUnit1Label">Mass (lbs)</div>
@@ -111,7 +115,7 @@
             </div>
         </div>
 
-        <div class="volume-group">
+        <div class="volume-group" id="volumeGroup">
             <div>
                 <input type="text" id="volumeInput1" placeholder="volume" onfocus="setActiveInput(this)">
                 <div class="unit" id="volumeUnit1Label">Volume (ft³)</div>
@@ -145,6 +149,7 @@
     </div>
 
     <script>
+        // Conversion factors
         const TON_TO_LBS = 2000;
         const YD_TO_FT = 27;
         const DENSITY_OF_WATER_ENGLISH = 62.4;
@@ -152,6 +157,7 @@
         const KG_TO_G = 1000;
         const M3_TO_CM3 = 1e6;
 
+        // Format number function
         function formatNumber(value) {
             const absValue = Math.abs(value);
             if (absValue >= 1e6 || (absValue > 0 && absValue < 0.01)) {
@@ -160,6 +166,7 @@
             return value.toFixed(2);
         }
 
+        // DOM elements
         const densityInput = document.getElementById('densityInput');
         const specificGravityInput = document.getElementById('specificGravity');
         const massInput1 = document.getElementById('massInput1');
@@ -171,13 +178,13 @@
         const massUnit2Label = document.getElementById('massUnit2Label');
         const volumeUnit1Label = document.getElementById('volumeUnit1Label');
         const volumeUnit2Label = document.getElementById('volumeUnit2Label');
-        const unitSystemEnglish = document.querySelector('input[value="english"]');
-        const unitSystemSI = document.querySelector('input[value="si"]');
+        const unitSystemEnglish = document.querySelector('input[name="unitSystem"][value="english"]');
+        const unitSystemSI = document.querySelector('input[name="unitSystem"][value="si"]');
 
         let activeInput = null;
-        let lastInput = null;
-        let userInputs = new Set();
+        let enteredGroups = [];
 
+        // Keypad functions
         function setActiveInput(input) {
             if (!input.readOnly) {
                 activeInput = input;
@@ -189,7 +196,8 @@
         function addNumber(num) {
             if (activeInput && !activeInput.readOnly) {
                 if (num === 'C') {
-                    clearLastInput();
+                    activeInput.value = '';
+                    handleInput(activeInput);
                     return;
                 }
                 let currentValue = activeInput.value || '';
@@ -197,37 +205,11 @@
                     return;
                 }
                 activeInput.value = currentValue + num;
-                if (parseFloat(activeInput.value)) {
-                    lastInput = activeInput;
-                    userInputs.add(activeInput);
-                }
-                activeInput.dispatchEvent(new Event('input')); // Trigger input event
+                handleInput(activeInput);
             }
         }
 
-        function clearLastInput() {
-            if (lastInput && !lastInput.classList.contains('calculated')) {
-                lastInput.value = '';
-                userInputs.delete(lastInput);
-                // Clear paired field if not calculated
-                if (lastInput === densityInput && !specificGravityInput.classList.contains('calculated')) {
-                    specificGravityInput.value = '';
-                } else if (lastInput === specificGravityInput && !densityInput.classList.contains('calculated')) {
-                    densityInput.value = '';
-                } else if (lastInput === massInput1 && !massInput2.classList.contains('calculated')) {
-                    massInput2.value = '';
-                } else if (lastInput === massInput2 && !massInput1.classList.contains('calculated')) {
-                    massInput1.value = '';
-                } else if (lastInput === volumeInput1 && !volumeInput2.classList.contains('calculated')) {
-                    volumeInput2.value = '';
-                } else if (lastInput === volumeInput2 && !volumeInput1.classList.contains('calculated')) {
-                    volumeInput1.value = '';
-                }
-                lastInput.focus();
-                calculate(); // Recalculate after clearing
-            }
-        }
-
+        // Update unit labels
         function updateUnits() {
             if (unitSystemEnglish.checked) {
                 densityUnitLabel.innerText = 'Density (lb/ft³)';
@@ -244,48 +226,35 @@
             }
         }
 
-        function handleDensityInput() {
-            const densityValue = parseFloat(densityInput.value);
-            const densityOfWater = unitSystemEnglish.checked ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI;
-            if (!isNaN(densityValue) && !densityInput.classList.contains('calculated')) {
-                specificGravityInput.value = formatNumber(densityValue / densityOfWater);
-            } else if (!specificGravityInput.classList.contains('calculated')) {
-                specificGravityInput.value = '';
-            }
-            calculate();
+        // Debounce function
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
         }
 
-        function handleSpecificGravityInput() {
-            const sgValue = parseFloat(specificGravityInput.value);
-            const densityOfWater = unitSystemEnglish.checked ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI;
-            if (!isNaN(sgValue) && !specificGravityInput.classList.contains('calculated')) {
-                densityInput.value = formatNumber(sgValue * densityOfWater);
-            } else if (!densityInput.classList.contains('calculated')) {
-                densityInput.value = '';
-            }
-            calculate();
-        }
-
-        function handleMassInput(activeInput, pairedInput, toPairedFactor) {
+        // Pairing handler
+        function syncPair(activeInput, pairedInput, toPairedFactor) {
             const value = parseFloat(activeInput.value);
-            if (!isNaN(value) && !activeInput.classList.contains('calculated')) {
+            if (!isNaN(value)) {
                 pairedInput.value = formatNumber(value * toPairedFactor);
-            } else if (!pairedInput.classList.contains('calculated')) {
+                if (activeInput.readOnly) {
+                    pairedInput.classList.add('calculated');
+                    pairedInput.readOnly = true;
+                } else {
+                    pairedInput.classList.remove('calculated');
+                    pairedInput.readOnly = false;
+                }
+            } else {
                 pairedInput.value = '';
+                pairedInput.classList.remove('calculated');
+                pairedInput.readOnly = false;
             }
-            calculate();
         }
 
-        function handleVolumeInput(activeInput, pairedInput, toPairedFactor) {
-            const value = parseFloat(activeInput.value);
-            if (!isNaN(value) && !activeInput.classList.contains('calculated')) {
-                pairedInput.value = formatNumber(value * toPairedFactor);
-            } else if (!pairedInput.classList.contains('calculated')) {
-                pairedInput.value = '';
-            }
-            calculate();
-        }
-
+        // Calculate third parameter and set as read-only
         function calculate() {
             const unitSystem = unitSystemEnglish.checked ? 'english' : 'si';
             const density = parseFloat(densityInput.value);
@@ -295,15 +264,20 @@
             const volume1 = parseFloat(volumeInput1.value);
             const volume2 = parseFloat(volumeInput2.value);
 
-            let mass = unitSystem === 'si' ? (mass1 || mass2 / KG_TO_G) : (mass1 || mass2 * TON_TO_LBS);
-            let volume = unitSystem === 'si' ? (volume1 || volume2 / M3_TO_CM3) : (volume1 || volume2 * YD_TO_FT);
+            let mass = unitSystem === 'si' ? (mass1 || (mass2 / KG_TO_G) || 0) : (mass1 || (mass2 * TON_TO_LBS) || 0);
+            let volume = unitSystem === 'si' ? (volume1 || (volume2 / M3_TO_CM3) || 0) : (volume1 || (volume2 * YD_TO_FT) || 0);
             const densityOfWater = unitSystem === 'si' ? DENSITY_OF_WATER_SI : DENSITY_OF_WATER_ENGLISH;
-            const finalDensity = density || (specificGravity * densityOfWater);
+            const finalDensity = density || (specificGravity * densityOfWater) || 0;
 
-            if (userInputs.size < 2) {
-                // Clear calculated fields if insufficient inputs
+            const densityEntered = enteredGroups.includes('densityGroup');
+            const massEntered = enteredGroups.includes('massGroup');
+            const volumeEntered = enteredGroups.includes('volumeGroup');
+            const inputCount = enteredGroups.length;
+
+            // Clear dependent fields if inputCount < 2
+            if (inputCount < 2) {
                 [densityInput, specificGravityInput, massInput1, massInput2, volumeInput1, volumeInput2].forEach(input => {
-                    if (!userInputs.has(input) && input.classList.contains('calculated')) {
+                    if (!enteredGroups.includes(input.parentElement.parentElement.id)) {
                         input.value = '';
                         input.classList.remove('calculated');
                         input.readOnly = false;
@@ -312,57 +286,63 @@
                 return;
             }
 
-            // Clear only calculated fields before recalculation
-            [densityInput, specificGravityInput, massInput1, massInput2, volumeInput1, volumeInput2].forEach(input => {
-                if (!userInputs.has(input) && input.classList.contains('calculated')) {
-                    input.value = '';
-                    input.classList.remove('calculated');
-                    input.readOnly = false;
-                }
-            });
-
-            if (userInputs.has(specificGravityInput) || userInputs.has(densityInput)) {
-                if (userInputs.has(massInput1) || userInputs.has(massInput2)) {
-                    const calculatedVolume = mass / finalDensity;
-                    volumeInput1.value = formatNumber(calculatedVolume);
+            // Calculate third parameter only
+            if (inputCount === 2) {
+                if (densityEntered && massEntered && !volumeEntered) {
+                    if (finalDensity === 0) return; // Prevent division by zero
+                    const calculatedVolume1 = mass / finalDensity;
+                    volumeInput1.value = formatNumber(calculatedVolume1);
                     volumeInput1.classList.add('calculated');
                     volumeInput1.readOnly = true;
-                    volumeInput2.value = formatNumber(unitSystem === 'english' ? calculatedVolume / YD_TO_FT : calculatedVolume * M3_TO_CM3);
-                    volumeInput2.classList.add('calculated');
-                    volumeInput2.readOnly = true;
-                } else if (userInputs.has(volumeInput1) || userInputs.has(volumeInput2)) {
-                    const calculatedMass = finalDensity * volume;
-                    massInput1.value = formatNumber(calculatedMass);
+                    syncPair(volumeInput1, volumeInput2, unitSystem === 'english' ? 1 / YD_TO_FT : M3_TO_CM3);
+                } else if (densityEntered && volumeEntered && !massEntered) {
+                    const calculatedMass1 = finalDensity * volume;
+                    massInput1.value = formatNumber(calculatedMass1);
                     massInput1.classList.add('calculated');
                     massInput1.readOnly = true;
-                    massInput2.value = formatNumber(unitSystem === 'english' ? calculatedMass / TON_TO_LBS : calculatedMass * KG_TO_G);
-                    massInput2.classList.add('calculated');
-                    massInput2.readOnly = true;
-                }
-            } else if (userInputs.has(massInput1) || userInputs.has(massInput2)) {
-                if (userInputs.has(volumeInput1) || userInputs.has(volumeInput2)) {
-                    const calculatedDensity = mass / volume;
-                    densityInput.value = formatNumber(calculatedDensity);
+                    syncPair(massInput1, massInput2, unitSystem === 'english' ? 1 / TON_TO_LBS : KG_TO_G);
+                } else if (massEntered && volumeEntered && !densityEntered) {
+                    if (volume === 0) return; // Prevent division by zero
+                    const calculatedDensity1 = mass / volume;
+                    densityInput.value = formatNumber(calculatedDensity1);
                     densityInput.classList.add('calculated');
                     densityInput.readOnly = true;
-                    specificGravityInput.value = formatNumber(calculatedDensity / densityOfWater);
-                    specificGravityInput.classList.add('calculated');
-                    specificGravityInput.readOnly = true;
+                    syncPair(densityInput, specificGravityInput, 1 / densityOfWater);
                 }
             }
         }
 
-        function resetValues() {
-            [densityInput, specificGravityInput, massInput1, massInput2, volumeInput1, volumeInput2].forEach(input => {
-                input.value = '';
-                input.classList.remove('calculated');
-                input.readOnly = false;
-            });
-            activeInput = null;
-            lastInput = null;
-            userInputs.clear();
+        // Debounced calculate
+        const debouncedCalculate = debounce(calculate, 300);
+
+        // Input handler
+        function handleInput(input) {
+            const unitSystem = unitSystemEnglish.checked ? 'english' : 'si';
+            const groupId = input.parentElement.parentElement.id;
+            
+            if (input.value.trim() === '') {
+                enteredGroups = enteredGroups.filter(g => g !== groupId);
+            } else if (!enteredGroups.includes(groupId) && enteredGroups.length < 2) {
+                enteredGroups.push(groupId);
+            }
+
+            if (input === densityInput) {
+                syncPair(densityInput, specificGravityInput, 1 / (unitSystem === 'english' ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI));
+            } else if (input === specificGravityInput) {
+                syncPair(specificGravityInput, densityInput, unitSystem === 'english' ? DENSITY_OF_WATER_ENGLISH : DENSITY_OF_WATER_SI);
+            } else if (input === massInput1) {
+                syncPair(massInput1, massInput2, unitSystem === 'english' ? 1 / TON_TO_LBS : KG_TO_G);
+            } else if (input === massInput2) {
+                syncPair(massInput2, massInput1, unitSystem === 'english' ? TON_TO_LBS : 1 / KG_TO_G);
+            } else if (input === volumeInput1) {
+                syncPair(volumeInput1, volumeInput2, unitSystem === 'english' ? 1 / YD_TO_FT : M3_TO_CM3);
+            } else if (input === volumeInput2) {
+                syncPair(volumeInput2, volumeInput1, unitSystem === 'english' ? YD_TO_FT : 1 / M3_TO_CM3);
+            }
+            debouncedCalculate();
         }
 
+        // Event listeners
         unitSystemEnglish.addEventListener('change', () => {
             updateUnits();
             resetValues();
@@ -372,13 +352,25 @@
             resetValues();
         });
 
-        densityInput.addEventListener('input', handleDensityInput);
-        specificGravityInput.addEventListener('input', handleSpecificGravityInput);
-        massInput1.addEventListener('input', () => handleMassInput(massInput1, massInput2, unitSystemEnglish.checked ? 1 / TON_TO_LBS : KG_TO_G));
-        massInput2.addEventListener('input', () => handleMassInput(massInput2, massInput1, unitSystemEnglish.checked ? TON_TO_LBS : 1 / KG_TO_G));
-        volumeInput1.addEventListener('input', () => handleVolumeInput(volumeInput1, volumeInput2, unitSystemEnglish.checked ? 1 / YD_TO_FT : M3_TO_CM3));
-        volumeInput2.addEventListener('input', () => handleVolumeInput(volumeInput2, volumeInput1, unitSystemEnglish.checked ? YD_TO_FT : 1 / M3_TO_CM3));
+        densityInput.addEventListener('input', () => handleInput(densityInput));
+        specificGravityInput.addEventListener('input', () => handleInput(specificGravityInput));
+        massInput1.addEventListener('input', () => handleInput(massInput1));
+        massInput2.addEventListener('input', () => handleInput(massInput2));
+        volumeInput1.addEventListener('input', () => handleInput(volumeInput1));
+        volumeInput2.addEventListener('input', () => handleInput(volumeInput2));
 
+        // Reset function
+        function resetValues() {
+            [densityInput, specificGravityInput, massInput1, massInput2, volumeInput1, volumeInput2].forEach(input => {
+                input.value = '';
+                input.classList.remove('calculated');
+                input.readOnly = false;
+            });
+            enteredGroups = [];
+            activeInput = null;
+        }
+
+        // Initialize
         updateUnits();
         resetValues();
     </script>

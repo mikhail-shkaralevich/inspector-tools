@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State DOT Inspector Dashboard</title>
+    <link rel="stylesheet" href="styles/styles.css">
+    <style>
+        .keyboard-controls {
+            position: absolute;
+            top: 0;
+            left: 150px;
+            z-index: 1000;
+        }
+        .keyboard-btn {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+            border-radius: 5px;
+            touch-action: manipulation; /* Improve touch responsiveness */
+        }
+        .keyboard-btn:hover {
+            background-color: #34495e;
+        }
+        .input-container {
+            position: absolute;
+            top: 40px;
+            left: 150px;
+            z-index: 1000;
+        }
+        .custom-input {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #2c3e50;
+            border-radius: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="keyboard-controls">
+        <button class="keyboard-btn" onclick="disableKeyboard()">Disable Keyboard</button>
+        <button class="keyboard-btn" onclick="enableKeyboard()">Enable Keyboard</button>
+    </div>
+    <div class="input-container">
+        <input type="text" class="custom-input" id="dashboard-input" placeholder="Enter text here...">
+    </div>
+
+    <script>
+        function disableKeyboard() {
+            try {
+                const dashboardInput = document.getElementById("dashboard-input");
+                dashboardInput.disabled = true; // Simpler property setting
+                dashboardInput.blur(); // Hide keyboard
+                // Optional: Log for debugging
+                console.log("Keyboard disabled");
+            } catch (e) {
+                console.error("Disable error:", e);
+            }
+        }
+
+        function enableKeyboard() {
+            try {
+                const dashboardInput = document.getElementById("dashboard-input");
+                dashboardInput.disabled = false; // Simpler property setting
+                // Only focus if no other element is active (iPadOS might block this without user interaction)
+                if (!document.activeElement || document.activeElement === document.body) {
+                    dashboardInput.focus(); // Show keyboard
+                }
+                // Optional: Log for debugging
+                console.log("Keyboard enabled");
+            } catch (e) {
+                console.error("Enable error:", e);
+            }
+        }
+
+        // Ensure buttons respond to touch
+        document.querySelectorAll(".keyboard-btn").forEach(btn => {
+            btn.addEventListener("touchstart", (e) => {
+                e.preventDefault(); // Prevent default touch behavior
+                if (btn.textContent.includes("Disable")) {
+                    disableKeyboard();
+                } else {
+                    enableKeyboard();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
