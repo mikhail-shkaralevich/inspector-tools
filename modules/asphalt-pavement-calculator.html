@@ -137,13 +137,25 @@
             </label>
         </div>
 
-        <!-- Tonnage and Volume Inputs -->
+        <!-- Tonnage and Thickness Inputs -->
         <div class="inline-group">
             <div class="input-group">
                 <label for="tonnage">Tonnage:</label>
                 <input type="text" id="tonnage" onfocus="setActiveInput(this)">
                 <span id="tonnage-read-only" class="read-only-label"></span>
             </div>
+            <div class="input-group">
+                <label for="thickness">Thickness (inches):</label>
+                <div class="inline-group">
+                    <input type="text" id="thickness" onfocus="setActiveInput(this)">
+                    <span id="thickness-fraction" class="read-only-label"></span>
+                </div>
+                <span id="thickness-read-only" class="read-only-label"></span>
+            </div>
+        </div>
+
+        <!-- Volume Inputs -->
+        <div class="inline-group">
             <div class="input-group">
                 <label for="volume">Volume (cubic feet):</label>
                 <input type="text" id="volume" readonly>
@@ -154,16 +166,6 @@
                 <input type="text" id="volume-cubic-yard" readonly>
                 <span class="read-only-label">Read Only</span>
             </div>
-        </div>
-
-        <!-- Thickness Input -->
-        <div class="input-group">
-            <label for="thickness">Thickness (inches):</label>
-            <div class="inline-group">
-                <input type="text" id="thickness" onfocus="setActiveInput(this)">
-                <span id="thickness-fraction" class="read-only-label"></span>
-            </div>
-            <span id="thickness-read-only" class="read-only-label"></span>
         </div>
 
         <!-- Area Inputs -->
