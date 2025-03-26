@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grade, Slope, or Taper Calculator</title>
     <style>
         body {
@@ -16,17 +16,21 @@
         }
         input[type="text"] {
             width: 100px;
+            font-size: 16px; /* Prevents iPhone zoom with viewport */
         }
         input[readonly] {
             background-color: #f0f0f0;
         }
-        .line1 {
+        .line {
             margin-bottom: 10px;
         }
-        .line1 input,
-        .line1 label,
-        .line1 span {
+        .line input,
+        .line label,
+        .line span {
             margin-right: 10px;
+        }
+        .versus-line {
+            margin-bottom: 10px;
         }
         .ratio-field {
             margin-bottom: 20px;
@@ -80,10 +84,16 @@
 
 <h2>Grade, Slope, or Taper Calculator</h2>
 
-<div class="line1">
+<div class="line">
     <input type="text" id="run" onfocus="setActiveInput(this)" oninput="calculateSlope()">
     <label for="run">Run, Horizontal</label>
+</div>
+
+<div class="versus-line">
     <span>versus</span>
+</div>
+
+<div class="line">
     <input type="text" id="rise" onfocus="setActiveInput(this)" oninput="calculateSlope()">
     <label for="rise">Rise, Vertical</label>
 </div>
