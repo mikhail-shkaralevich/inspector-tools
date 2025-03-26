@@ -14,7 +14,7 @@
             display: inline-block;
             width: 150px;
         }
-        input[type="text"] { /* Changed all inputs to type="text" */
+        input[type="text"] {
             width: 100px;
         }
         input[readonly] {
@@ -120,7 +120,7 @@
 </div>
 
 <div class="measurement-group">
-    <label>Horizontal:</label>
+    <label>Horizontal:</label><br>
     <input type="text" id="horizontalInches" onfocus="setActiveInput(this)" oninput="calculateMeasurements('horizontal', 'inches')" placeholder="Inches">
     <span class="unit inches">inches</span>
     <span class="or">or</span>
@@ -129,7 +129,7 @@
 </div>
 
 <div class="measurement-group">
-    <label>Vertical:</label>
+    <label>Vertical:</label><br>
     <input type="text" id="verticalInches" onfocus="setActiveInput(this)" oninput="calculateMeasurements('vertical', 'inches')" placeholder="Inches">
     <span class="unit inches">inches</span>
     <span class="or">or</span>
@@ -144,7 +144,7 @@
     let activeInput = null;
 
     function setActiveInput(input) {
-        if (input.id !== 'ratio') { // Prevent keypad use on readonly ratio field
+        if (input.id !== 'ratio') {
             activeInput = input;
         }
     }
@@ -153,17 +153,17 @@
         if (activeInput && !activeInput.readOnly) {
             let currentValue = activeInput.value || '';
             if (num === '.' && currentValue.includes('.')) {
-                return; // Prevent multiple decimal points
+                return;
             }
             activeInput.value = currentValue + num;
-            activeInput.oninput(); // Trigger the input's calculation
+            activeInput.oninput();
         }
     }
 
     function clearInput() {
         if (activeInput && !activeInput.readOnly) {
             activeInput.value = '';
-            activeInput.oninput(); // Trigger the input's calculation
+            activeInput.oninput();
         }
     }
 
