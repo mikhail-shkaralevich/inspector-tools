@@ -3,6 +3,7 @@ const {Pool}  = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
@@ -29,11 +30,11 @@ app.use(express.json());
 
 // Pool manages multiple connections.
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'inspector-tools-db',
-    password: '3531C45499',
-    port: 5432,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
 });
 
 /**
@@ -48,7 +49,7 @@ function verifyToken(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, 'MY_JWT_TOKEN');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Add decoded user payload to the request object.
         next(); // Proceed to the next middleware or route handler.
     } catch (err) {
@@ -119,7 +120,7 @@ app.post('/api/login', async (req, res) => {
         const payload = { id: admin.id, username: admin.username };
         const token = jwt.sign(
             payload,
-            "MY_JWT_TOKEN", // IMPORTANT: use an environmnet variable in prod.
+            process.env.JWT_SECRET,
             { expiresIn: '1h' } 
         );
 

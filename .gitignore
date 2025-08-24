@@ -2,3 +2,4 @@ api/node_modules/
 *.sql
 .vs/
 api/createAdmin.js
+api/.env
