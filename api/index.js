@@ -76,6 +76,38 @@ app.post('/api/questions', async (req, res) => {
     }
 });
 
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try { // Find admin in the database;
+        const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
+        const admin = result.rows[0];
+
+        if (!admin) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Compare provided password with the stored hash.
+        const isMatch = await bcrypt.compare(password, admin.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // If credentials are correct - create a JWT.
+        const payload = { id: admin.id, username: admin.username };
+        const token = jwt.sign(
+            payload,
+            "MY_JWT_TOKEN", // IMPORTANT: use an environmnet variable in prod.
+            { expiresIn: '1h' } 
+        );
+
+        res.json({ token });
+    } catch (err) {
+        console.err(err);
+        res.status(500).send('Server Error');
+    }
+});
+
 app.delete('/api/questions/:id', async (req, res) => {
     try {
         const {id} = req.params;
