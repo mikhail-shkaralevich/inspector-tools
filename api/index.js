@@ -34,6 +34,24 @@ const pool = new Pool({
     port: 5432,
 });
 
+/**
+ * Middleware to verify JWT token.
+ */
+function verifyToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Extract JWT token.
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access denied. No token provided. '});
+    }
+
+    try {
+        const decoded = jwt.verify(token, 'MY_JWT_SECRET');
+        req.user = decoded; // Add decoded user payload to the request object.
+        next(); // Proceed to the next middleware or route handler.
+    }
+}
+
 app.get('/',  (req, res) => {
     res.send("Hello from the backend!");
 });
