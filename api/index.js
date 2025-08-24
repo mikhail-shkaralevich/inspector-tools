@@ -1,6 +1,8 @@
 const express = require('express');
 const {Pool}  = require('pg');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = 3000;
@@ -46,9 +48,11 @@ function verifyToken(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, 'MY_JWT_SECRET');
+        const decoded = jwt.verify(token, 'MY_JWT_TOKEN');
         req.user = decoded; // Add decoded user payload to the request object.
         next(); // Proceed to the next middleware or route handler.
+    } catch (err) {
+        res.status(403).json({ error: 'Invalid token.' });
     }
 }
 
@@ -66,7 +70,7 @@ app.get('/api/questions', async (req, res) => {
     }
 });
 
-app.post('/api/questions', async (req, res) => {
+app.post('/api/questions', verifyToken, async (req, res) => {
     try {
         const { program, question_text, options, correct_answer } = req.body;
 
@@ -121,12 +125,12 @@ app.post('/api/login', async (req, res) => {
 
         res.json({ token });
     } catch (err) {
-        console.err(err);
+        console.error(err);
         res.status(500).send('Server Error');
     }
 });
 
-app.delete('/api/questions/:id', async (req, res) => {
+app.delete('/api/questions/:id', verifyToken, async (req, res) => {
     try {
         const {id} = req.params;
 
@@ -148,4 +152,4 @@ app.delete('/api/questions/:id', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is up and running on http://localhost:${PORT}`);
-})
+});
